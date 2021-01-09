@@ -8,7 +8,6 @@
 #include "my_disp_lib.h"
 
 #include "..\ili9341\ili9341.h"
-#include "..\ili9341\fonts.h"
 #include "mylib.h"
 #include "stdint.h"
 #include <string.h>
@@ -67,20 +66,17 @@ void disp_time_view(stDispMenu *dm, RTC_HandleTypeDef *hrtc, RTC_TimeTypeDef *sT
 	// конец обновления времени
 }
 
-short disp_curs_view(stDispMenu *dm) {
-
-  int count_lines = 15;
-
+short disp_curs_view(stDispMenu *dm, FontDef font) {
 
   dm->disp_znak[0] = ' ';
 	if (dm->count == 0 ) {
 		if (dm->menu_data) {
-			ILI9341_WriteString(0, 15*dm->count, dm->disp_znak, Font_12x15, ILI9341_WHITE, ILI9341_BLACK);
+			ILI9341_WriteString(0, font.height*dm->count, dm->disp_znak, font, ILI9341_WHITE, ILI9341_BLACK);
 		} else {
-			ILI9341_WriteString(160, 15*dm->count, dm->disp_znak, Font_12x15, ILI9341_WHITE, ILI9341_BLACK);
+			ILI9341_WriteString(160, font.height*dm->count, dm->disp_znak, font, ILI9341_WHITE, ILI9341_BLACK);
 		}
 	} else {
-		ILI9341_WriteString(0, 15*dm->count, dm->disp_znak, Font_12x15, ILI9341_BLACK, ILI9341_WHITE);
+		ILI9341_WriteString(0, font.height*dm->count, dm->disp_znak, font, ILI9341_BLACK, ILI9341_WHITE);
 	}
 	if (count_lt > 0) {
 		dm->count--;
@@ -89,12 +85,12 @@ short disp_curs_view(stDispMenu *dm) {
 		dm->count++;
 		count_lt = 0;
 	}
-	if (dm->count >= count_lines) {
+	if (dm->count > dm->lines_max) {
 		if (dm->diap_max >= dm->menuCountEl) {
 			dm->diap_min = 0;
 			dm->count = dm->title_line;
 		} else {
-			dm->count = count_lines-1;
+			dm->count = dm->lines_max;
 			dm->diap_min +=1;
 		}
 		dm->diap_max = dm->diap_min + dm->lines_max;
@@ -104,7 +100,7 @@ short disp_curs_view(stDispMenu *dm) {
 			if (dm->count < 0) {
 				dm->diap_max = dm->menuCountEl;
 				dm->diap_min = dm->diap_max - dm->lines_max;
-				dm->count = count_lines-1;
+				dm->count = dm->lines_max;
 				dm->fl_res_menu = 1;
 			}
 		} else {
@@ -117,18 +113,19 @@ short disp_curs_view(stDispMenu *dm) {
 	dm->disp_znak[0] = '>';
 	if (dm->count == 0 ) {
 		if (dm->menu_data) {
-			ILI9341_WriteString(0, 15*dm->count, dm->disp_znak, Font_12x15, ILI9341_WHITE, ILI9341_BLACK);
+			ILI9341_WriteString(0, font.height*dm->count, dm->disp_znak, font, ILI9341_WHITE, ILI9341_BLACK);
 		} else {
-			ILI9341_WriteString(160, 15*dm->count, dm->disp_znak, Font_12x15, ILI9341_WHITE, ILI9341_BLACK);
+			ILI9341_WriteString(160, font.height*dm->count, dm->disp_znak, font, ILI9341_WHITE, ILI9341_BLACK);
 		}
 	} else {
-		ILI9341_WriteString(0, 15*dm->count, dm->disp_znak, Font_12x15, ILI9341_BLACK, ILI9341_WHITE);
+		ILI9341_WriteString(0, font.height*dm->count, dm->disp_znak, font, ILI9341_BLACK, ILI9341_WHITE);
 	}
 	return 0;
 }
 
-short disp_out_lines(stDispMenu *dm) {
+short disp_out_lines(stDispMenu *dm, FontDef font) {
 	// Запись данных в дисплей
+	const char *menu;
 	if (dm->fl_res_menu) {
 		if (dm->menu_data) {
 			dm->clrRectLeft = ILI9341_BLACK;
@@ -141,26 +138,28 @@ short disp_out_lines(stDispMenu *dm) {
 			dm->clrWordsLf = ILI9341_BLACK;
 			dm->clrWordsRt = ILI9341_WHITE;
 		}
-		ILI9341_FillRectangle(0, 0, 160, 15, dm->clrRectLeft);
-		ILI9341_FillRectangle(160, 0, 160, 15, dm->clrRectRight);
-		ILI9341_WriteString_DMA(12, 0, &str_title[0][0], Font_12x15, dm->clrWordsLf, dm->clrRectLeft);
-		ILI9341_WriteString_DMA(12+160, 0, &str_title[1][0], Font_12x15, dm->clrWordsRt, dm->clrRectRight);
+		// Рисуем заголовки
+		ILI9341_FillRectangle(0, 0, 160, font.height, dm->clrRectLeft);
+		ILI9341_FillRectangle(160, 0, 160, font.height, dm->clrRectRight);
+		ILI9341_WriteString_DMA(12, 0, &str_title[0][0], font, dm->clrWordsLf, dm->clrRectLeft);
+		ILI9341_WriteString_DMA(12+160, 0, &str_title[1][0], font, dm->clrWordsRt, dm->clrRectRight);
+		// отображаем пункты меню
 		for (uint16_t i = dm->diap_min; i < dm->diap_max; i++) {
-			if (dm->menu_data) {
-				ILI9341_WriteString_DMA(12, 15 * (i - dm->diap_min + dm->title_line), &str_menu[i][0], Font_12x15, ILI9341_BLACK, ILI9341_WHITE);
-			} else {
-				ILI9341_WriteString_DMA(12, 15 * (i - dm->diap_min + dm->title_line), &str_menu_point[i][0], Font_12x15, ILI9341_BLACK, ILI9341_WHITE);
-			}
+			if (dm->menu_data)
+				menu = &str_menu[i][0];
+			else
+				menu = &str_menu_point[i][0];
+		  ILI9341_WriteString_DMA(12, font.height * (i - dm->diap_min + dm->title_line), menu, font, ILI9341_BLACK, ILI9341_WHITE);
 		}
 		dm->fl_res_menu = 0;
 	}
-
+	// отображаем занчения параметов
 	for (uint16_t i = dm->diap_min; i < dm->diap_max; i++) {
-		if (dm->menu_data) {
-			ILI9341_WriteString_DMA(12 * 18, 15 * (i - dm->diap_min + dm->title_line), &str_menu_values[i][0], Font_12x15, ILI9341_BLACK, ILI9341_WHITE);
-		} else {
-			ILI9341_WriteString_DMA(12 * 18, 15 * (i - dm->diap_min + dm->title_line), &str_menu_values_point[i][0], Font_12x15, ILI9341_BLACK, ILI9341_WHITE);
-		}
+		if (dm->menu_data)
+			menu = &str_menu_values[i][0];
+		else
+			menu = &str_menu_values_point[i][0];
+		ILI9341_WriteString_DMA(12 * 18, font.height * (i - dm->diap_min + dm->title_line), menu, font, ILI9341_BLACK, ILI9341_WHITE);
 	}
 	// Конец записи данных в дисплей
 	return 0;
@@ -169,13 +168,13 @@ short disp_out_lines(stDispMenu *dm) {
 void disp_point_edit (stDispMenu *dm) {
 	// изменение уставок
 	if (((dm->diap_min + dm->count - dm->title_line) == menuPWMTermRez) ) {
-		if (ER11_Button == 1) {
+		if (enterButton) {
 			if ((dm->diap_min + dm->count - dm->title_line) == dm->b_enter_line) {
 				dm->b_enter_line = 0;
 			} else {
 				dm->b_enter_line = menuPWMTermRez;
 			}
-			ER11_Button = 0;
+			enterButton = 0;
 		}
 		if ((dm->diap_min + dm->count - dm->title_line) == dm->b_enter_line) {
 			if (count_lt < 0) {
@@ -204,9 +203,9 @@ void disp_button_press(stDispMenu *dm) {
 		}
 		dm->pwr_on = 0;
 	}
-	if (ER11_Button == 1) {
+	if (enterButton) {
 		dm->line = dm->diap_min + dm->count - dm->title_line;
-		ER11_Button = 0;
+		enterButton = 0;
 		for(int i = 0; i < 6; i++) {
 			if (dm->line == rel_manage[i].line) {
 				if (rel_manage[i].fl_on_off) {
@@ -220,6 +219,7 @@ void disp_button_press(stDispMenu *dm) {
 				}
 			}
 		}
+		// если кнопка нажата на шапке то изменить тип отображаемого меню
 		if (dm->count == 0) {
 			dm->menu_data = (~dm->menu_data) & 0x01;
 			if (dm->menu_data) {

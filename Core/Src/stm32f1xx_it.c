@@ -217,6 +217,7 @@ void TIM1_UP_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
+	// Обрабатываем нажате кнопок
 	b_ER1 = HAL_GPIO_ReadPin(ER11_LINE1_GPIO_Port, ER11_LINE1_Pin);
 	b_ER2 = HAL_GPIO_ReadPin(ER11_LINE2_GPIO_Port, ER11_LINE2_Pin);
 	if (!b_ER1 & !b_ER2) {
@@ -335,10 +336,10 @@ void EXTI15_10_IRQHandler(void)
   	EXTI->PR |= (1<<12); // Сбросить флаг EXTI12.
         // Обработка события EXTI12
   	if (HAL_GPIO_ReadPin(ER11_BUTTON_GPIO_Port, ER11_BUTTON_Pin)) {
-  		ER11_Button = 1;
+  		enterButton = 1;
   	}
   }
-	if (EXTI->PR & (1<<11)) //(b_ER1 & !ER11_Button) {
+	if (EXTI->PR & (1<<11)) //(b_ER1 & !enterButton) {
 	{
   	TIM2->ARR = 2000;
   	TIM2->CNT = 0;
@@ -348,7 +349,7 @@ void EXTI15_10_IRQHandler(void)
   		b_lt = 1;
   	}
 	}
-	if (EXTI->PR & (1<<10)) {//(b_ER2 & !ER11_Button) {
+	if (EXTI->PR & (1<<10)) {//(b_ER2 & !enterButton) {
   	TIM2->ARR = 2000;
   	TIM2->CNT = 0;
   	TIM2->DIER |= TIM_DIER_UIE;

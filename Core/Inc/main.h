@@ -45,7 +45,7 @@ extern "C" {
 uint32_t wtr_flow_met;
 int count_lt;
 int count_rt;
-int8_t ER11_Button;
+int8_t enterButton;
 int8_t fl_on_off;
 uint8_t buff[32];
 uint8_t cout_rcvUART;

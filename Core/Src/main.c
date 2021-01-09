@@ -173,7 +173,7 @@ int main(void)
   wtr_flow_met = 0;
   count_lt = 0;
   count_rt = 0;
-  ER11_Button = 1;
+  enterButton = 1;
   fl_on_off = 0;
   fl_endreceive485 = 0;
   slaveID = 1;
@@ -877,9 +877,6 @@ void StartDispTask(void const * argument)
   /* USER CODE BEGIN StartDispTask */
   /* Infinite loop */
 
-
-
-
   osDelay(1000);
 
   HAL_GPIO_WritePin(DISP_BLK_GPIO_Port, DISP_BLK_Pin, GPIO_PIN_SET);
@@ -917,7 +914,7 @@ void StartDispTask(void const * argument)
 
   	disp_button_press(&dm);
 
-  	disp_out_lines(&dm);
+  	disp_out_lines(&dm, Font_12x15);
 
   	disp_point_edit (&dm);
 
@@ -925,7 +922,7 @@ void StartDispTask(void const * argument)
   		return;
   	}
 
-  	disp_curs_view(&dm);
+  	disp_curs_view(&dm, Font_12x15);
 
   }
   /* USER CODE END StartDispTask */
