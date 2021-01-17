@@ -911,6 +911,8 @@ void StartDispTask(void const * argument)
   	inttochar(&strMenuValsData[menuWtrCounter][0], wtr_flow_met);
   	inttochar(&strMenuValsData[menuPWMTermRez][0], dm.pwm_tmp);
   	fltochar(&strMenuValsData[menuDHT22_1_humd][0], DHT22Hum);
+
+  	fltochar(&strMenuValsPoint[menuDHT22_1_humd][0], DHT22Hum);
   	// КОНЕЦ Переносим данные в строки
 
 

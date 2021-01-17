@@ -82,35 +82,48 @@ short disp_curs_view(stDispMenu *dm, FontDef font) {
 	// счетик изменеия положения курсора
 	if (count_lt > 0) {
 		dm->count--;
+		dm->line--;
 		count_lt = 0;
 	} else if (count_lt < 0) {
 		dm->count++;
+		dm->line++;
 		count_lt = 0;
 	}
 	// логика работы курсора
 	if (dm->count > dm->menuCountEl) {
 		if (dm->diap_max >= dm->menuCountEl) {
+			// если мы превысили счетчиком максимальное количество элеметнов
+			// то переводим курсор на 1 элемент
 			dm->diap_min = 0;
 			dm->count = title_line;
+			dm->line = dm->diap_min;
 		} else {
+			// если не превысили то сдвигаем список на один вниз
 			dm->count = lines_max;
 			dm->diap_min +=1;
+			dm->line += 1;
 		}
 		dm->diap_max = dm->diap_min + dm->menuCountEl;//lines_max;
 		dm->redrawDispMenu = 1;
 	} else if (dm->count <= 0) {
 		if (dm->diap_min <= 0) { // ==0
 			if (dm->count < 0) {
+				// если выкрутили наверх доконца то перемещаем курсор в самый конец списка
 				dm->diap_max = dm->menuCountEl;
-				if (dm->diap_max > lines_max)
+				if (dm->diap_max > lines_max) {
 					dm->diap_min = dm->diap_max - lines_max;
-				else
+					dm->count = lines_max;
+				} else {
 					dm->diap_min = 0;
-				dm->count = dm->diap_max;
+					dm->count = dm->diap_max;
+				}
+				//dm->count = lines_max;
+				dm->line = dm->diap_max-1;
 				dm->redrawDispMenu = 1;
 			}
 		} else {
 			dm->diap_min -= 1;
+			dm->line -= 1;
 			dm->count = title_line;
 			dm->diap_max = dm->diap_min + dm->menuCountEl;
 			dm->redrawDispMenu = 1;
@@ -213,14 +226,15 @@ void disp_button_press(stDispMenu *dm) {
 			dm->redrawDispMenu = 1;
 			return;
 		}
+		char flexit = true;
 
 		if (!dm->menu_data)
-			switch (strMenuTypeValPoint[dm->count-1]) {
+			switch (strMenuTypeValPoint[dm->line]) {
 			case ITNONE:
 				break;
 			case ITONOFF:
 				for(int i = 0; i < 6; i++) {
-					if ((dm->count-1) == rel_manage[i].line) {
+					if (dm->line == rel_manage[i].line) {
 						rel_manage[i].fl_on_off = ~rel_manage[i].fl_on_off;
 						memcpy(&strMenuValsPoint[rel_manage[i].line][0], rel_manage[i].fl_on_off ? str_on : str_off, CNTVSYMINSTR);
 						HAL_GPIO_WritePin(rel_manage[i].gpio_port, rel_manage[i].pin, rel_manage[i].fl_on_off);
@@ -228,6 +242,26 @@ void disp_button_press(stDispMenu *dm) {
 				}
 				break;
 			case ITINT:
+				// для редактирования значений захватываем поток
+				do
+				{
+					// счетик изменеия положения курсора
+					if (count_lt > 0) {
+
+						count_lt = 0;
+					} else if (count_lt < 0) {
+
+						count_lt = 0;
+					}
+
+					// необходима задержка
+					osDelay(100);
+					if (enterButton) {
+						flexit = false;
+						osDelay(200);
+						enterButton = 0;
+					}
+				} while(flexit);
 				/*
 				if (((dm->diap_min + dm->count - title_line) == menuPWMTermRez) ) {
 					if (enterButton) {
@@ -256,7 +290,26 @@ void disp_button_press(stDispMenu *dm) {
 				*/
 				break;
 			case ITFLOAT:
+				// для редактирования значений захватываем поток
+				do
+				{
+					// счетик изменеия положения курсора
+					if (count_lt > 0) {
 
+						count_lt = 0;
+					} else if (count_lt < 0) {
+
+						count_lt = 0;
+					}
+
+					// необходима задержка
+					osDelay(100);
+					if (enterButton) {
+						flexit = false;
+						osDelay(200);
+						enterButton = 0;
+					}
+				} while(flexit);
 				break;
 			default:
 				break;
@@ -264,7 +317,6 @@ void disp_button_press(stDispMenu *dm) {
 	}
 	// КОНЕЦ обработки нажатия
 }
-
 
 
 

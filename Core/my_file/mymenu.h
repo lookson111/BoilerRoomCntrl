@@ -37,14 +37,15 @@ enum {
 };
 
 enum {
+	// насос отопления
 	menuRelPompHeatSys,
-	menuPNull1,
-	menuPNull2,
-	menuPNull3,
-	menuPNull4,
-	menuPNull5,
-	menuPNull6,
-	menuPNull7,
+	mPntDriveHeatMinPres, // минимальное давление
+	mPntPNull2,
+	mPntPNull3,
+	mPntPNull4,
+	mPntPNull5,
+	mPntPNull6,
+	mPntPNull7,
 	menuRelHeatingHome,
 	menuRelWtrPompHome,
 	menuRelCPHotWater,

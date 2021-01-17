@@ -13,6 +13,7 @@
 #include "main.h"
 #include "..\ili9341\fonts.h"
 #include "mymenu.h"
+#include "mytime.h"
 
 //char strMenuValsData[menuCountElements][7];
 //char strMenuValsPoint[menuPCountElements][7];
@@ -31,7 +32,7 @@ typedef struct {
 	short clrRectRight;
 	short clrWordsLf;
 	short clrWordsRt;
-	//char line;
+	int line;						// указатель на текущий выбранный элемент
 	char b_enter_line;
 	int count;						// указатель на текущую линию в листе!! от 0 от lines_max текущий элемент на который указывает указатель
 	uint32_t pwm_tmp;
@@ -45,6 +46,8 @@ short disp_curs_view(stDispMenu *dm, FontDef font);
 void disp_poweron(stDispMenu *dm);
 void disp_button_press(stDispMenu *dm);
 void disp_point_edit (stDispMenu *dm);
+
+
 
 
 #endif /* MY_FILE_MY_DISP_LIB_H_ */

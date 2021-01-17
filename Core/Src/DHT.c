@@ -183,7 +183,7 @@ char read(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin) {
 
 }
 
-
+/*
 void DWT_Init(void)
 {
     //разрешаем использовать счётчик
@@ -207,6 +207,6 @@ void delay_us(uint32_t us)
 
 uint32_t millis() {
 	return DWT->CYCCNT;
-}
+}*/
 
 

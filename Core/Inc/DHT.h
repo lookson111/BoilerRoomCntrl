@@ -3,6 +3,7 @@
 
 
 #include "main.h"
+#include "../my_file/mytime.h"
 /* DHT library 
 
 MIT license
@@ -26,11 +27,11 @@ written by Adafruit Industries
 
 #define INPUT 	0x01
 #define OUTPUT  0x00
-
+/*
 #define    DWT_CYCCNT    *(volatile unsigned long *)0xE0001004
 #define    DWT_CONTROL   *(volatile unsigned long *)0xE0001000
 #define    SCB_DEMCR     *(volatile unsigned long *)0xE000EDFC
-
+*/
 
 uint8_t data[6];
 uint8_t _pin, _type, _count;
@@ -46,10 +47,10 @@ float readHumidity(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin);
 float readTemperature(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin, char S);
 
 char  dataRead(float* tmp, float* hum);
-
+/*
 void DWT_Init(void);
 void delay_us(uint32_t us);
 uint32_t millis(void);
-
+*/
 
 #endif
