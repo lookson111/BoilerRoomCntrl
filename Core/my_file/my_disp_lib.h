@@ -14,8 +14,8 @@
 #include "..\ili9341\fonts.h"
 #include "mymenu.h"
 
-char strMenuValsData[menuCountElements][7];
-char strMenuValsPoint[menuPCountElements][7];
+//char strMenuValsData[menuCountElements][7];
+//char strMenuValsPoint[menuPCountElements][7];
 
 typedef struct {
 	char disp_znak[2];
@@ -33,7 +33,7 @@ typedef struct {
 	short clrWordsRt;
 	//char line;
 	char b_enter_line;
-	int count;						// текущий элемент на который указывает указатель
+	int count;						// указатель на текущую линию в листе!! от 0 от lines_max текущий элемент на который указывает указатель
 	uint32_t pwm_tmp;
 } stDispMenu;
 

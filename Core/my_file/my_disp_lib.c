@@ -26,11 +26,11 @@ const char disp_znak[] = {'>' , 0x00, ' ', 0x00};
 
 void disp_init (stDispMenu *dm) {
 	dm->redrawDispMenu = 1;
+	dm->menuCountEl = menuCountElements;
 	dm->diap_min = 0;
-	dm->diap_max = lines_max;
+	dm->diap_max = dm->menuCountEl;
 	dm->menu_data = 1;
 	dm->pwr_on = 1;
-	dm->menuCountEl = menuCountElements;
 	dm->b_enter_line = 0;
 	dm->count = 1;
 	dm->pwm_tmp = 0;
@@ -88,7 +88,7 @@ short disp_curs_view(stDispMenu *dm, FontDef font) {
 		count_lt = 0;
 	}
 	// логика работы курсора
-	if (dm->count > lines_max) {
+	if (dm->count > dm->menuCountEl) {
 		if (dm->diap_max >= dm->menuCountEl) {
 			dm->diap_min = 0;
 			dm->count = title_line;
@@ -96,20 +96,23 @@ short disp_curs_view(stDispMenu *dm, FontDef font) {
 			dm->count = lines_max;
 			dm->diap_min +=1;
 		}
-		dm->diap_max = dm->diap_min + lines_max;
+		dm->diap_max = dm->diap_min + dm->menuCountEl;//lines_max;
 		dm->redrawDispMenu = 1;
 	} else if (dm->count <= 0) {
-		if (dm->diap_min <= 0) {
+		if (dm->diap_min <= 0) { // ==0
 			if (dm->count < 0) {
 				dm->diap_max = dm->menuCountEl;
-				dm->diap_min = dm->diap_max - lines_max;
-				dm->count = lines_max;
+				if (dm->diap_max > lines_max)
+					dm->diap_min = dm->diap_max - lines_max;
+				else
+					dm->diap_min = 0;
+				dm->count = dm->diap_max;
 				dm->redrawDispMenu = 1;
 			}
 		} else {
 			dm->diap_min -= 1;
 			dm->count = title_line;
-			dm->diap_max = dm->diap_min + lines_max;
+			dm->diap_max = dm->diap_min + dm->menuCountEl;
 			dm->redrawDispMenu = 1;
 		}
 	}
@@ -155,6 +158,10 @@ short disp_out_lines(stDispMenu *dm, FontDef font) {
 				menu = &strMenuNamePoint[i][0];
 		  ILI9341_WriteString_DMA(12, font.height * (i - dm->diap_min + title_line), menu, font, ILI9341_BLACK, ILI9341_WHITE);
 		}
+		for (uint16_t i = dm->diap_max; i < lines_max; i++) {
+			ILI9341_WriteString_DMA(12, font.height * (i - dm->diap_min + title_line), strClearName, font, ILI9341_BLACK, ILI9341_WHITE);
+		}
+
 		dm->redrawDispMenu = 0;
 	}
 	// отображаем занчения параметов
@@ -165,36 +172,16 @@ short disp_out_lines(stDispMenu *dm, FontDef font) {
 			menu = &strMenuValsPoint[i][0];
 		ILI9341_WriteString_DMA(12 * 18, font.height * (i - dm->diap_min + title_line), menu, font, ILI9341_BLACK, ILI9341_WHITE);
 	}
+	for (uint16_t i = dm->diap_max; i < lines_max; i++) {
+		ILI9341_WriteString_DMA(12 * 18, font.height * (i - dm->diap_min + title_line), str_clear, font, ILI9341_BLACK, ILI9341_WHITE);
+	}
 	// Конец записи данных в дисплей
 	return 0;
 }
 
 void disp_point_edit (stDispMenu *dm) {
 	// изменение уставок
-	if (((dm->diap_min + dm->count - title_line) == menuPWMTermRez) ) {
-		if (enterButton) {
-			if ((dm->diap_min + dm->count - title_line) == dm->b_enter_line) {
-				dm->b_enter_line = 0;
-			} else {
-				dm->b_enter_line = menuPWMTermRez;
-			}
-			enterButton = 0;
-		}
-		if ((dm->diap_min + dm->count - title_line) == dm->b_enter_line) {
-			if (count_lt < 0) {
-				dm->pwm_tmp = dm->pwm_tmp + 500;
-				if (dm->pwm_tmp > 65500)
-					dm->pwm_tmp = 0;
-			} else if (count_lt > 0) {
-				if (dm->pwm_tmp < 1000) {
-					dm->pwm_tmp = 0;
-				} else {
-					dm->pwm_tmp = dm->pwm_tmp - 500;
-				}
-			}
-			count_lt = 0;
-		}
-	}
+
 	// КОНЕЦ изменение уставок
 }
 
@@ -222,26 +209,58 @@ void disp_button_press(stDispMenu *dm) {
 			} else {
 				dm->menuCountEl = menuPCountElements;
 			}
+			dm->diap_max = dm->menuCountEl;
 			dm->redrawDispMenu = 1;
-			//enterButton = 0;
 			return;
 		}
-		//dm->line = dm->diap_min + dm->count - title_line;
-		//enterButton = 0;
-		for(int i = 0; i < 6; i++) {
-			if (dm->count == rel_manage[i].line) {
-				if (rel_manage[i].fl_on_off) {
-					rel_manage[i].fl_on_off = GPIO_PIN_RESET;
-					memcpy(&strMenuValsPoint[rel_manage[i].line][0], str_off, CNTVSYMINSTR);
-					HAL_GPIO_WritePin(rel_manage[i].gpio_port, rel_manage[i].pin, rel_manage[i].fl_on_off);
-				} else {
-					rel_manage[i].fl_on_off = GPIO_PIN_SET;
-					memcpy(&strMenuValsPoint[rel_manage[i].line][0], str_on, CNTVSYMINSTR);
-					HAL_GPIO_WritePin(rel_manage[i].gpio_port, rel_manage[i].pin, rel_manage[i].fl_on_off);
 
+		if (!dm->menu_data)
+			switch (strMenuTypeValPoint[dm->count-1]) {
+			case ITNONE:
+				break;
+			case ITONOFF:
+				for(int i = 0; i < 6; i++) {
+					if ((dm->count-1) == rel_manage[i].line) {
+						rel_manage[i].fl_on_off = ~rel_manage[i].fl_on_off;
+						memcpy(&strMenuValsPoint[rel_manage[i].line][0], rel_manage[i].fl_on_off ? str_on : str_off, CNTVSYMINSTR);
+						HAL_GPIO_WritePin(rel_manage[i].gpio_port, rel_manage[i].pin, rel_manage[i].fl_on_off);
+					}
 				}
+				break;
+			case ITINT:
+				/*
+				if (((dm->diap_min + dm->count - title_line) == menuPWMTermRez) ) {
+					if (enterButton) {
+						if ((dm->diap_min + dm->count - title_line) == dm->b_enter_line) {
+							dm->b_enter_line = 0;
+						} else {
+							dm->b_enter_line = menuPWMTermRez;
+						}
+						enterButton = 0;
+					}
+					if ((dm->diap_min + dm->count - title_line) == dm->b_enter_line) {
+						if (count_lt < 0) {
+							dm->pwm_tmp = dm->pwm_tmp + 500;
+							if (dm->pwm_tmp > 65500)
+								dm->pwm_tmp = 0;
+						} else if (count_lt > 0) {
+							if (dm->pwm_tmp < 1000) {
+								dm->pwm_tmp = 0;
+							} else {
+								dm->pwm_tmp = dm->pwm_tmp - 500;
+							}
+						}
+						count_lt = 0;
+					}
+				}
+				*/
+				break;
+			case ITFLOAT:
+
+				break;
+			default:
+				break;
 			}
-		}
 	}
 	// КОНЕЦ обработки нажатия
 }

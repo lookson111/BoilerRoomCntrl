@@ -45,7 +45,6 @@ enum {
 	menuPNull5,
 	menuPNull6,
 	menuPNull7,
-	menuPNull8,
 	menuRelHeatingHome,
 	menuRelWtrPompHome,
 	menuRelCPHotWater,
@@ -76,12 +75,14 @@ static const char str_title[titleCountElements][13] = {
 		{0xd3, 0xf1, 0xf2, 0xe0, 0xe2, 0xea, 0xe8, 0x00} // Уставки
 };
 
+
+static const char strClearName[]  = {0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00}; //
 static const char str_on[]				= {0xc2, 0xea, 0xeb, 0x2e, 0x20, 0x20, 0x00}; // Вкл.
 static const char str_off[]				= {0xce, 0xf2, 0xea, 0xeb, 0x2e, 0x20, 0x00}; // Откл.
 static const char str_clear[]			= {0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00}; //
 const char strMenuNameData[menuCountElements][CNTMSYMINSTR];
-const char strMenuNamePoint[menuPCountElements*MENUCOUNTPARAM][CNTMSYMINSTR];
-const char strMenuTypeValPoint[menuPCountElements*MENUCOUNTPARAM];
+const char strMenuNamePoint[menuPCountElements][CNTMSYMINSTR];
+const char strMenuTypeValPoint[menuPCountElements];
 
 char strMenuValsData[menuCountElements][7];
 char strMenuValsPoint[menuPCountElements][7];
