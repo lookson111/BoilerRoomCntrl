@@ -886,12 +886,13 @@ void StartDispTask(void const * argument)
   disp_init (&dm);
 
 	for(int i = 0; i < menuCountElements; i++) {
-		memcpy(&str_menu_values[i][0], str_clear, 7);
+		memcpy(&strMenuValsData[i][0], str_clear, 7);
 	}
 	for(int i = 0; i < menuPCountElements; i++) {
-		memcpy(&str_menu_values_point[i][0], str_clear, 7);
+		memcpy(&strMenuValsPoint[i][0], str_clear, 7);
 	}
 
+  disp_poweron(&dm);
 
   for(;;)
   {
@@ -899,18 +900,20 @@ void StartDispTask(void const * argument)
 
 
   	// Переносим данные в строки
-  	fltochar(&str_menu_values[menuDHT22_1_temp][0], DHT22Temp);
-  	fltochar(&str_menu_values[menuDHT22_1_humd][0], DHT22Hum);
-  	fltochar(&str_menu_values[menuTRez_1][0], travg[en_tr1]);
-  	fltochar(&str_menu_values[menuTRez_2][0], travg[en_tr2]);
-  	fltochar(&str_menu_values[menuTRez_3][0], travg[en_tr3]);
-  	fltochar(&str_menu_values[menuTRez_4][0], travg[en_tr4]);
-  	fltochar(&str_menu_values[menuPres_1][0], managePressHeatingSys.previousPress);
-  	fltochar(&str_menu_values[menuPres_2][0], pmavg[en_pm2]);
-  	inttochar(&str_menu_values[menuWtrCounter][0], wtr_flow_met);
-  	inttochar(&str_menu_values[menuPWMTermRez][0], dm.pwm_tmp);
-  	fltochar(&str_menu_values[menuDHT22_1_humd][0], DHT22Hum);
+  	fltochar(&strMenuValsData[menuDHT22_1_temp][0], DHT22Temp);
+  	fltochar(&strMenuValsData[menuDHT22_1_humd][0], DHT22Hum);
+  	fltochar(&strMenuValsData[menuTRez_1][0], travg[en_tr1]);
+  	fltochar(&strMenuValsData[menuTRez_2][0], travg[en_tr2]);
+  	fltochar(&strMenuValsData[menuTRez_3][0], travg[en_tr3]);
+  	fltochar(&strMenuValsData[menuTRez_4][0], travg[en_tr4]);
+  	fltochar(&strMenuValsData[menuPres_1][0], managePressHeatingSys.previousPress);
+  	fltochar(&strMenuValsData[menuPres_2][0], pmavg[en_pm2]);
+  	inttochar(&strMenuValsData[menuWtrCounter][0], wtr_flow_met);
+  	inttochar(&strMenuValsData[menuPWMTermRez][0], dm.pwm_tmp);
+  	fltochar(&strMenuValsData[menuDHT22_1_humd][0], DHT22Hum);
   	// КОНЕЦ Переносим данные в строки
+
+
 
   	disp_button_press(&dm);
 
