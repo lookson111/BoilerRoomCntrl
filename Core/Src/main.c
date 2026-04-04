@@ -74,16 +74,18 @@ osThreadId sensReadTaskHandle;
 osThreadId dispTaskHandle;
 /* USER CODE BEGIN PV */
 
+osMutexId sensorDataMutexHandle;
+
 StManagePressHeatingSys managePressHeatingSys;
 
 uint8_t channelsADCTr[] = { 1, // Терморезистор 1
-														2, // Терморезистор 2
-														3, // Терморезистор 4
-														4, // Терморезистор 3
-												};
+                                                        2, // Терморезистор 2
+                                                        3, // Терморезистор 4
+                                                        4, // Терморезистор 3
+                                                };
 uint8_t channelsADCPm[] = { 8, // Датчик давления 1
-														9  // Датчик давления 2
-													};
+                                                        9  // Датчик давления 2
+                                                    };
 
 
 
@@ -233,6 +235,10 @@ int main(void)
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
+
+  /* Create the mutex for shared sensor data */
+  osMutexDef(sensorDataMutex);
+  sensorDataMutexHandle = osMutexCreate(osMutex(sensorDataMutex));
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
@@ -790,24 +796,24 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
-	osDelay(900);
-	//uint16_t i = 0;
-	const char wmsg[] = "Some data";
-	char rmsg[sizeof(wmsg)];
-  uint16_t devAddr = (0x50 << 1);
-  uint16_t memAddr = 0x0010;
+    osDelay(900);
+    //uint16_t i = 0;
+    const char wmsg[] = "Some data";
+    char rmsg[sizeof(wmsg)];
+    uint16_t devAddr = (0x50 << 1);
+    uint16_t memAddr = 0x0010;
 
-	HAL_StatusTypeDef status;
+    HAL_StatusTypeDef status;
 
-	HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
-	modbus_configure(&modBusData, &huart3, slaveID, HOLDING_REGS_SIZE_BR, holdingRegs);
+    HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
+    modbus_configure(&modBusData, &huart3, slaveID, HOLDING_REGS_SIZE_BR, holdingRegs);
   //TIM4->ARR = modBusData.T1_5;
-	//HAL_UART_Receive_IT(&huart3, (uint8_t*)buff, 3);
-	//__HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
-	RCC->APB1ENR	|= RCC_APB1ENR_USART3EN;				// USART3 Clock ON
-	USART3->CR1 	|= USART_CR1_UE | USART_CR1_TE | USART_CR1_RE |		// USART1 ON, TX ON, RX ON
-			     USART_CR1_RXNEIE;					// RXNE Int ON
-	NVIC_EnableIRQ (USART3_IRQn);
+    //HAL_UART_Receive_IT(&huart3, (uint8_t*)buff, 3);
+    //__HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
+    RCC->APB1ENR    |= RCC_APB1ENR_USART3EN;                // USART3 Clock ON
+    USART3->CR1     |= USART_CR1_UE | USART_CR1_TE | USART_CR1_RE |        // USART1 ON, TX ON, RX ON
+                 USART_CR1_RXNEIE;                    // RXNE Int ON
+    NVIC_EnableIRQ (USART3_IRQn);
 
   HAL_I2C_Mem_Write(&hi2c1, devAddr, memAddr, I2C_MEMADD_SIZE_16BIT,
       (uint8_t*)wmsg, sizeof(wmsg), HAL_MAX_DELAY);
@@ -815,9 +821,9 @@ void StartDefaultTask(void const * argument)
   {
     status = HAL_I2C_IsDeviceReady(&hi2c1, devAddr, 1, HAL_MAX_DELAY);
     if(status == HAL_OK) {
-    	// !!!Чтобы заработало необходимо в stm32f1xx_hal_msp.c ///
-    	//    перенести __HAL_RCC_I2C1_CLK_ENABLE(); до 				///
-    	//    __HAL_RCC_GPIOB_CLK_ENABLE();											///
+        // !!!Чтобы заработало необходимо в stm32f1xx_hal_msp.c ///
+        //    перенести __HAL_RCC_I2C1_CLK_ENABLE(); до                 ///
+        //    __HAL_RCC_GPIOB_CLK_ENABLE();                                            ///
       HAL_I2C_Mem_Read(&hi2c1, devAddr, memAddr, I2C_MEMADD_SIZE_16BIT, (uint8_t*)rmsg, sizeof(wmsg), 100);
     }
   }
@@ -835,9 +841,9 @@ void StartSensReadTask(void const * argument)
 {
   /* USER CODE BEGIN StartSensReadTask */
 
-	osDelay(1000);
-	DWT_Init();
-	begin(DHT22_2_GPIO_Port, DHT22_2_Pin);
+    osDelay(1000);
+    DWT_Init();
+    begin(DHT22_2_GPIO_Port, DHT22_2_Pin);
 
   HAL_ADCEx_Calibration_Start(&hadc1);
 
@@ -860,36 +866,48 @@ void StartSensReadTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-  	if (((start_time + update_time*72000) < millis()) & tmp_mes) {
-  		DHT22Temp = readTemperature(DHT22_2_GPIO_Port, DHT22_2_Pin, 0x00);
-  		start_time = millis();
-  		hum_mes = 1;
-  		tmp_mes = 0;
-  	}
-  	if (((start_time + update_time*72000) < millis()) & hum_mes) {
-  		DHT22Hum = readHumidity(DHT22_2_GPIO_Port, DHT22_2_Pin);
-  		start_time = millis();
-  		hum_mes = 0;
-  		tmp_mes = 1;
-  	}
+      if (((start_time + update_time*72000) < millis()) & tmp_mes) {
+          float temp = readTemperature(DHT22_2_GPIO_Port, DHT22_2_Pin, 0x00);
+          osMutexWait(sensorDataMutexHandle, osWaitForever);
+          DHT22Temp = temp;
+          osMutexRelease(sensorDataMutexHandle);
+          start_time = millis();
+          hum_mes = 1;
+          tmp_mes = 0;
+      }
+      if (((start_time + update_time*72000) < millis()) & hum_mes) {
+          float hum = readHumidity(DHT22_2_GPIO_Port, DHT22_2_Pin);
+          osMutexWait(sensorDataMutexHandle, osWaitForever);
+          DHT22Hum = hum;
+          osMutexRelease(sensorDataMutexHandle);
+          start_time = millis();
+          hum_mes = 0;
+          tmp_mes = 1;
+      }
     for (uint8_t j = 0; j < enTrChanEnd; j++) {
-			ADC = ADC_Result(&hadc1, channelsADCTr[j]);
-			Rt = 1000*((3000 * ADC ) / (4095 - ADC));
-			for (uint8_t i = 0; i < 151; i++) {
-				if ( Rt > tTR_temper_volt_arr[i] ) {
-					RI = tTR_temper_volt_arr[i];
-					RI_1 = tTR_temper_volt_arr[i-1];
-					travg[j] = Rt/(RI - RI_1) - RI_1/(RI - RI_1) + i - 26;
-					break;
-				}
-			}
+            ADC = ADC_Result(&hadc1, channelsADCTr[j]);
+            Rt = 1000*((3000 * ADC ) / (4095 - ADC));
+            for (uint8_t i = 0; i < 151; i++) {
+                if ( Rt > tTR_temper_volt_arr[i] ) {
+                    RI = tTR_temper_volt_arr[i];
+                    RI_1 = tTR_temper_volt_arr[i-1];
+                    float tval = Rt/(RI - RI_1) - RI_1/(RI - RI_1) + i - 26;
+                    osMutexWait(sensorDataMutexHandle, osWaitForever);
+                    travg[j] = tval;
+                    osMutexRelease(sensorDataMutexHandle);
+                    break;
+                }
+            }
     }
 
     for (uint8_t i = 0; i < enPmChanEnd; i++) {
-    	pmavgadc[i] = ADC_Result(&hadc1, channelsADCPm[i]);
-			Rt = pmavgadc[i];
-			Rt = Rt/4095*3.3*1.4751;
-			pmavg[i] = (Rt*50-25) / 14.5038;
+        pmavgadc[i] = ADC_Result(&hadc1, channelsADCPm[i]);
+            Rt = pmavgadc[i];
+            Rt = Rt/4095*3.3*1.4751;
+            float pval = (Rt*50-25) / 14.5038;
+            osMutexWait(sensorDataMutexHandle, osWaitForever);
+            pmavg[i] = pval;
+            osMutexRelease(sensorDataMutexHandle);
     }
 
     workManagePressHeatingSys(&managePressHeatingSys, pmavgadc[en_pm1], millis());
@@ -932,49 +950,52 @@ void StartDispTask(void const * argument)
 
   disp_init (&dm);
 
-	for(int i = 0; i < menuCountElements; i++) {
-		memcpy(&strMenuValsData[i][0], str_clear, 7);
-	}
-	for(int i = 0; i < menuPCountElements; i++) {
-		memcpy(&strMenuValsPoint[i][0], str_clear, 7);
-	}
+    for(int i = 0; i < menuCountElements; i++) {
+        memcpy(&strMenuValsData[i][0], str_clear, 7);
+    }
+    for(int i = 0; i < menuPCountElements; i++) {
+        memcpy(&strMenuValsPoint[i][0], str_clear, 7);
+    }
 
   disp_poweron(&dm);
 
   for(;;)
   {
-  	disp_time_view(&dm, &hrtc, &sTime, &DateToUpdate);
+      disp_time_view(&dm, &hrtc, &sTime, &DateToUpdate);
 
+      // Переносим данные в строки (protected by mutex)
+      osMutexWait(sensorDataMutexHandle, osWaitForever);
+      float loc_dhtTemp = DHT22Temp;
+      float loc_dhtHum  = DHT22Hum;
+      float loc_tr1 = travg[en_tr1];
+      float loc_tr2 = travg[en_tr2];
+      float loc_tr3 = travg[en_tr3];
+      float loc_tr4 = travg[en_tr4];
+      float loc_pm2 = pmavg[en_pm2];
+      osMutexRelease(sensorDataMutexHandle);
 
-  	// Переносим данные в строки
-  	fltochar(&strMenuValsData[menuDHT22_1_temp][0], DHT22Temp);
-  	fltochar(&strMenuValsData[menuDHT22_1_humd][0], DHT22Hum);
-  	fltochar(&strMenuValsData[menuTRez_1][0], travg[en_tr1]);
-  	fltochar(&strMenuValsData[menuTRez_2][0], travg[en_tr2]);
-  	fltochar(&strMenuValsData[menuTRez_3][0], travg[en_tr3]);
-  	fltochar(&strMenuValsData[menuTRez_4][0], travg[en_tr4]);
-  	fltochar(&strMenuValsData[menuPres_1][0], managePressHeatingSys.previousPress);
-  	fltochar(&strMenuValsData[menuPres_2][0], pmavg[en_pm2]);
-  	inttochar(&strMenuValsData[menuWtrCounter][0], wtr_flow_met);
-  	inttochar(&strMenuValsData[menuPWMTermRez][0], dm.pwm_tmp);
-  	fltochar(&strMenuValsData[menuDHT22_1_humd][0], DHT22Hum);
+      fltochar(&strMenuValsData[menuDHT22_1_temp][0], loc_dhtTemp);
+      fltochar(&strMenuValsData[menuDHT22_1_humd][0], loc_dhtHum);
+      fltochar(&strMenuValsData[menuTRez_1][0], loc_tr1);
+      fltochar(&strMenuValsData[menuTRez_2][0], loc_tr2);
+      fltochar(&strMenuValsData[menuTRez_3][0], loc_tr3);
+      fltochar(&strMenuValsData[menuTRez_4][0], loc_tr4);
+      fltochar(&strMenuValsData[menuPres_1][0], managePressHeatingSys.previousPress);
+      fltochar(&strMenuValsData[menuPres_2][0], loc_pm2);
+      inttochar(&strMenuValsData[menuWtrCounter][0], wtr_flow_met);
+      inttochar(&strMenuValsData[menuPWMTermRez][0], dm.pwm_tmp);
+      fltochar(&strMenuValsData[menuDHT22_1_humd][0], loc_dhtHum);
 
-  	fltochar(&strMenuValsPoint[menuDHT22_1_humd][0], DHT22Hum);
-  	// КОНЕЦ Переносим данные в строки
+      fltochar(&strMenuValsPoint[menuDHT22_1_humd][0], loc_dhtHum);
+      // КОНЕЦ Переносим данные в строки
 
+      disp_button_press(&dm);
 
+      disp_out_lines(&dm, Font_12x15);
 
-  	disp_button_press(&dm);
+      disp_point_edit (&dm);
 
-  	disp_out_lines(&dm, Font_12x15);
-
-  	disp_point_edit (&dm);
-
-  	if (dm.b_enter_line) {
-  		return;
-  	}
-
-  	disp_curs_view(&dm, Font_12x15);
+      disp_curs_view(&dm, Font_12x15);
 
   }
   /* USER CODE END StartDispTask */
