@@ -961,7 +961,14 @@ void StartDispTask(void const * argument)
 
   for(;;)
   {
-      disp_time_view(&dm, &hrtc, &sTime, &DateToUpdate);
+      static uint32_t last_time_update = 0;
+      uint32_t now = HAL_GetTick();
+
+      // Update time every 200ms
+      if (now - last_time_update >= 200) {
+          disp_time_view(&dm, &hrtc, &sTime, &DateToUpdate);
+          last_time_update = now;
+      }
 
       // Переносим данные в строки (protected by mutex)
       osMutexWait(sensorDataMutexHandle, osWaitForever);
