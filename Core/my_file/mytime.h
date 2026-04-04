@@ -1,0 +1,25 @@
+/*
+ * mytime.h
+ *
+ *  Created on: Jan 17, 2021
+ *      Author: Rinat
+ */
+
+#ifndef MY_FILE_MYTIME_H_
+#define MY_FILE_MYTIME_H_
+
+#include "main.h"
+//#include "DHT.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "cmsis_os.h"
+
+#define    DWT_CYCCNT    *(volatile unsigned long *)0xE0001004
+#define    DWT_CONTROL   *(volatile unsigned long *)0xE0001000
+#define    SCB_DEMCR     *(volatile unsigned long *)0xE000EDFC
+
+void DWT_Init(void);
+void delay_us(uint32_t us);
+uint32_t millis(void);
+
+#endif /* MY_FILE_MYTIME_H_ */

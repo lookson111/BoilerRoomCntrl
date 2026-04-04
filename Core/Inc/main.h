@@ -32,7 +32,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "..\modbus\SimpleModbusSlave.h"
+#include "../modbus/SimpleModbusSlave.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -144,6 +144,7 @@ void Error_Handler(void);
 #define CP_HOT_WATER_GPIO_Port GPIOB
 #define Water_Heat_Home_Pin GPIO_PIN_9
 #define Water_Heat_Home_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 #define ER11_ON 0x1F // состояние байта при котором будем считать что триггер кнопки сработал
 
@@ -163,5 +164,3 @@ void Error_Handler(void);
 #endif
 
 #endif /* __MAIN_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -11,7 +11,7 @@
 #include "stm32f1xx_hal.h"
 #include "cmsis_os.h"
 #include "main.h"
-#include "..\ili9341\fonts.h"
+#include "../ili9341/fonts.h"
 #include "mymenu.h"
 #include "mytime.h"
 
