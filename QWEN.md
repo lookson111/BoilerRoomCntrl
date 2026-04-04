@@ -167,3 +167,6 @@ The following changes were made to ensure compatibility with modern ARM GCC (13.
 
 ## Qwen Added Memories
 - Before committing changes, always edit README.md and QWEN.md files to reflect the changes. All comments and documentation must be written in English.
+- After applying fixes, always run debug and verify the program on the controller does not crash for at least 20 seconds.
+- Always run debug sessions through ./debug.sh instead of manually running openocd/gdb commands. Use ./debug.sh check for stability verification, ./debug.sh interactive for interactive debugging.
+- All git commit messages and comments must be written in English.
