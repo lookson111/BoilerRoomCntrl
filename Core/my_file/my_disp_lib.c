@@ -34,12 +34,17 @@ void disp_init (stDispMenu *dm) {
 	dm->b_enter_line = 0;
 	dm->count = 1;
 	dm->pwm_tmp = 0;
-	
+	dm->time_edit_mode = 0;
+	dm->time_tmp_hour = 0;
+	dm->time_tmp_minute = 0;
+	dm->time_tmp_second = 0;
+	dm->time_tmp_day = 1;
+	dm->time_tmp_month = 1;
+	dm->time_tmp_year = 25;
+
   ILI9341_Init();
   ILI9341_SetRotation(1);
   ILI9341_FillScreen(ILI9341_WHITE);
-
-
 }
 
 void disp_time_view(stDispMenu *dm, RTC_HandleTypeDef *hrtc, RTC_TimeTypeDef *sTime, RTC_DateTypeDef *sDate)
@@ -194,6 +199,24 @@ void disp_point_edit (stDispMenu *dm) {
 	// КОНЕЦ изменение уставок
 }
 
+// Write time values from dm temp vars to RTC
+void disp_set_time(stDispMenu *dm, RTC_HandleTypeDef *hrtc) {
+	RTC_TimeTypeDef sTime = {0};
+	RTC_DateTypeDef sDate = {0};
+
+	sTime.Hours = dm->time_tmp_hour;
+	sTime.Minutes = dm->time_tmp_minute;
+	sTime.Seconds = dm->time_tmp_second;
+
+	sDate.WeekDay = 1; // Monday (could be calculated)
+	sDate.Month = dm->time_tmp_month;
+	sDate.Date = dm->time_tmp_day;
+	sDate.Year = dm->time_tmp_year;
+
+	HAL_RTC_SetTime(hrtc, &sTime, RTC_FORMAT_BIN);
+	HAL_RTC_SetDate(hrtc, &sDate, RTC_FORMAT_BIN);
+}
+
 // включение устройства
 void disp_poweron(stDispMenu *dm) {
 	if (dm->pwr_on) {
@@ -206,7 +229,7 @@ void disp_poweron(stDispMenu *dm) {
 	}
 }
 
-void disp_button_press(stDispMenu *dm) {
+void disp_button_press(stDispMenu *dm, RTC_HandleTypeDef *hrtc) {
 	// Оработка наждатия
 	if (enterButton) {
 		// если кнопка нажата на шапке то изменить тип отображаемого меню
@@ -237,16 +260,76 @@ void disp_button_press(stDispMenu *dm) {
 					}
 				}
 				break;
+			case ITTIME:
+				// Enter/exit time editing mode
+				if (dm->time_edit_mode == 0) {
+					// Load current time from RTC
+					RTC_TimeTypeDef sTime = {0};
+					RTC_DateTypeDef sDate = {0};
+					HAL_RTC_GetTime(hrtc, &sTime, RTC_FORMAT_BIN);
+					HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BIN);
+					dm->time_tmp_hour = sTime.Hours;
+					dm->time_tmp_minute = sTime.Minutes;
+					dm->time_tmp_second = sTime.Seconds;
+					dm->time_tmp_day = sDate.Date;
+					dm->time_tmp_month = sDate.Month;
+					dm->time_tmp_year = sDate.Year;
+					dm->time_edit_mode = 1;
+					dm->redrawDispMenu = 1;
+				} else {
+					// Apply time to RTC
+					dm->time_edit_mode = 0;
+					disp_set_time(dm, hrtc);
+					dm->redrawDispMenu = 1;
+				}
+				break;
 			case ITINT:
 				// для редактирования значений захватываем поток
 				do
 				{
 					// счетик изменеия положения курсора
 					if (count_lt > 0) {
-
+						// Increment value based on current menu item
+						if (dm->line == menuTimeHour) {
+							dm->time_tmp_hour = (dm->time_tmp_hour + 1) % 24;
+						} else if (dm->line == menuTimeMinute) {
+							dm->time_tmp_minute = (dm->time_tmp_minute + 1) % 60;
+						} else if (dm->line == menuTimeSecond) {
+							dm->time_tmp_second = (dm->time_tmp_second + 1) % 60;
+						} else if (dm->line == menuTimeDay) {
+							if (dm->time_tmp_day < 31) dm->time_tmp_day++;
+							else dm->time_tmp_day = 1;
+						} else if (dm->line == menuTimeMonth) {
+							if (dm->time_tmp_month < 12) dm->time_tmp_month++;
+							else dm->time_tmp_month = 1;
+						} else if (dm->line == menuTimeYear) {
+							if (dm->time_tmp_year < 99) dm->time_tmp_year++;
+							else dm->time_tmp_year = 0;
+						}
+						dm->redrawDispMenu = 1;
 						count_lt = 0;
 					} else if (count_lt < 0) {
-
+						// Decrement value based on current menu item
+						if (dm->line == menuTimeHour) {
+							if (dm->time_tmp_hour > 0) dm->time_tmp_hour--;
+							else dm->time_tmp_hour = 23;
+						} else if (dm->line == menuTimeMinute) {
+							if (dm->time_tmp_minute > 0) dm->time_tmp_minute--;
+							else dm->time_tmp_minute = 59;
+						} else if (dm->line == menuTimeSecond) {
+							if (dm->time_tmp_second > 0) dm->time_tmp_second--;
+							else dm->time_tmp_second = 59;
+						} else if (dm->line == menuTimeDay) {
+							if (dm->time_tmp_day > 1) dm->time_tmp_day--;
+							else dm->time_tmp_day = 31;
+						} else if (dm->line == menuTimeMonth) {
+							if (dm->time_tmp_month > 1) dm->time_tmp_month--;
+							else dm->time_tmp_month = 12;
+						} else if (dm->line == menuTimeYear) {
+							if (dm->time_tmp_year > 0) dm->time_tmp_year--;
+							else dm->time_tmp_year = 99;
+						}
+						dm->redrawDispMenu = 1;
 						count_lt = 0;
 					}
 
@@ -258,32 +341,6 @@ void disp_button_press(stDispMenu *dm) {
 						enterButton = 0;
 					}
 				} while(flexit);
-				/*
-				if (((dm->diap_min + dm->count - title_line) == menuPWMTermRez) ) {
-					if (enterButton) {
-						if ((dm->diap_min + dm->count - title_line) == dm->b_enter_line) {
-							dm->b_enter_line = 0;
-						} else {
-							dm->b_enter_line = menuPWMTermRez;
-						}
-						enterButton = 0;
-					}
-					if ((dm->diap_min + dm->count - title_line) == dm->b_enter_line) {
-						if (count_lt < 0) {
-							dm->pwm_tmp = dm->pwm_tmp + 500;
-							if (dm->pwm_tmp > 65500)
-								dm->pwm_tmp = 0;
-						} else if (count_lt > 0) {
-							if (dm->pwm_tmp < 1000) {
-								dm->pwm_tmp = 0;
-							} else {
-								dm->pwm_tmp = dm->pwm_tmp - 500;
-							}
-						}
-						count_lt = 0;
-					}
-				}
-				*/
 				break;
 			case ITFLOAT:
 				// для редактирования значений захватываем поток

@@ -36,6 +36,14 @@ typedef struct {
 	char b_enter_line;
 	int count;						// указатель на текущую линию в листе!! от 0 от lines_max текущий элемент на который указывает указатель
 	uint32_t pwm_tmp;
+	// Time editing state
+	char time_edit_mode;			// 0 = not editing time, 1 = editing time
+	uint8_t time_tmp_hour;
+	uint8_t time_tmp_minute;
+	uint8_t time_tmp_second;
+	uint8_t time_tmp_day;
+	uint8_t time_tmp_month;
+	uint8_t time_tmp_year;
 } stDispMenu;
 
 extern stDispMenu dm;
@@ -44,8 +52,9 @@ void disp_time_view(stDispMenu *dm, RTC_HandleTypeDef *hrtc, RTC_TimeTypeDef *sT
 short disp_out_lines(stDispMenu *dm, FontDef font);
 short disp_curs_view(stDispMenu *dm, FontDef font);
 void disp_poweron(stDispMenu *dm);
-void disp_button_press(stDispMenu *dm);
+void disp_button_press(stDispMenu *dm, RTC_HandleTypeDef *hrtc);
 void disp_point_edit (stDispMenu *dm);
+void disp_set_time(stDispMenu *dm, RTC_HandleTypeDef *hrtc);
 
 
 

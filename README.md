@@ -47,6 +47,23 @@ make clean    # Remove build artifacts
 | `sensReadTask` | Normal | Read all sensors (DHT22, thermistors, pressure) |
 | `dispTask` | Normal | Display rendering, menu, button handling |
 
+### User Interface
+
+The display is split into two halves (left = Data, right = Setpoints). Navigate with the three physical buttons:
+
+- **Left/Right buttons** — move cursor up/down
+- **Enter button** on title bar — switch between Data and Setpages
+- **Enter button** on an item — toggle relay (ON/OFF) or enter edit mode
+
+#### Time Editing
+
+Six time-editing items are available in the Setpoints menu (Часы, Мин., Сек., День, Месяц, Год):
+
+1. Navigate to "Часы" (Hours) and press **Enter** to enter time-edit mode (loads current RTC values)
+2. Use **Left/Right** buttons to increment/decrement the highlighted value
+3. Press **Enter** on any time item to adjust it
+4. Press **Enter** on "Часы" again to apply the new time to the RTC
+
 ### Project Structure
 
 ```

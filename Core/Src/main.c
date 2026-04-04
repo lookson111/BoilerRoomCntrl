@@ -991,9 +991,19 @@ void StartDispTask(void const * argument)
       fltochar(&strMenuValsData[menuDHT22_1_humd][0], loc_dhtHum);
 
       fltochar(&strMenuValsPoint[menuDHT22_1_humd][0], loc_dhtHum);
+
+      // Update time edit values when in time edit mode
+      if (dm.time_edit_mode) {
+          inttochar(&strMenuValsPoint[menuTimeHour][0], dm.time_tmp_hour);
+          inttochar(&strMenuValsPoint[menuTimeMinute][0], dm.time_tmp_minute);
+          inttochar(&strMenuValsPoint[menuTimeSecond][0], dm.time_tmp_second);
+          inttochar(&strMenuValsPoint[menuTimeDay][0], dm.time_tmp_day);
+          inttochar(&strMenuValsPoint[menuTimeMonth][0], dm.time_tmp_month);
+          inttochar(&strMenuValsPoint[menuTimeYear][0], dm.time_tmp_year);
+      }
       // КОНЕЦ Переносим данные в строки
 
-      disp_button_press(&dm);
+      disp_button_press(&dm, &hrtc);
 
       disp_out_lines(&dm, Font_12x15);
 

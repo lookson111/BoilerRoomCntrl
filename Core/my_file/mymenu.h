@@ -17,6 +17,7 @@
 #define ITONOFF 1
 #define ITINT   2
 #define ITFLOAT 3
+#define ITTIME  4
 
 enum {
 	menuDHT22_1_temp,
@@ -51,6 +52,12 @@ enum {
 	menuRelCPHotWater,
 	menuRelCPHeatSys,
 	menuRelValveWater,
+	menuTimeHour,       // Часы
+	menuTimeMinute,     // Минуты
+	menuTimeSecond,     // Секунды
+	menuTimeDay,        // День
+	menuTimeMonth,      // Месяц
+	menuTimeYear,       // Год
 	menuPCountElements
 };
 

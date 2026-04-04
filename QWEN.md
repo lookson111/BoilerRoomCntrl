@@ -109,8 +109,20 @@ Drivers/                # STM32 HAL + CMSIS
 - ILI9341 2.4" TFT LCD (240x320, 16-bit color)
 - SPI2 with DMA for transfers
 - XPT2046 touch controller (defined but not fully integrated)
-- Menu system with data display (14 items) and setpoints (13 items)
+- Menu system with data display (14 items) and setpoints (19 items — 13 original + 6 time editing)
 - All UI text in Russian (CP1251 encoding)
+
+### Time Editing UI
+
+Six new setpoints items were added for RTC time configuration:
+- **Часы** (Hours, 0–23) — also acts as enter/exit edit mode toggle
+- **Мин.** (Minutes, 0–59)
+- **Сек.** (Seconds, 0–59)
+- **День** (Day, 1–31)
+- **Месяц** (Month, 1–12)
+- **Год** (Year, 0–99)
+
+Editing flow: Press Enter on "Часы" to load current RTC time into temp vars, then use Left/Right buttons to increment/decrement any value, and press Enter on "Часы" again to write to RTC. A new `ITTIME` type distinguishes the entry-point item from regular `ITINT` items.
 
 ## Build (Linux)
 
@@ -159,6 +171,7 @@ The following changes were made to ensure compatibility with modern ARM GCC (13.
 3. **Two display drivers:** Both `ili9341.c` and `disp_spi.c` (ST7789VW) exist. Active code uses `ili9341.c`.
 4. **Duplicate pin assignment:** `Water_Heat_Home` and `wtr_hm_in` both map to PA5 in `rel_manage[]`.
 5. **Touch panel not fully configured:** SPI1 for XPT2046 is referenced but not configured in `.ioc`.
+6. **ITINT/ITFLOAT editing stubs:** The value increment/decrement logic for non-time ITINT items and ITFLOAT items is still a placeholder (empty bodies in the edit loop).
 
 ## Branches
 
