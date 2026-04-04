@@ -24,11 +24,11 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "DHT.h"
-#include "..\ili9341\ili9341.h"
-#include "..\ili9341\fonts.h"
-#include "..\ili9341\testimg.h"
+#include "../ili9341/ili9341.h"
+#include "../ili9341/fonts.h"
+#include "../ili9341/testimg.h"
 //#include "stm32f10x_gpio.h"
-#include "..\my_file\mylib.h"
+#include "../my_file/mylib.h"
 #include "../my_file/my_sensors.h"
 #include "stdint.h"
 #include <string.h>

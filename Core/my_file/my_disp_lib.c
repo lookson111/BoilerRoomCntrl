@@ -7,7 +7,7 @@
 
 #include "my_disp_lib.h"
 
-#include "..\ili9341\ili9341.h"
+#include "../ili9341/ili9341.h"
 #include "mylib.h"
 #include "stdint.h"
 #include <string.h>
