@@ -2,8 +2,8 @@
 #include "stm32f1xx_hal.h"
 #include "ili9341.h"
 
-#define QUANTPIXELLINE 	320 * 15
-#define QUANTLINES 			240 / 15
+#define QUANTPIXELLINE 	320 * 4
+#define QUANTLINES 		240 / 4
 
 uint16_t ILI9341_WIDTH = 240;
 uint16_t ILI9341_HEIGHT = 320;
@@ -284,69 +284,65 @@ void ILI9341_WriteString(uint16_t x, uint16_t y, const char* str, FontDef font, 
 }
 
 void ILI9341_WriteString_DMA(uint16_t x, uint16_t y, const char* str, FontDef font, uint16_t color, uint16_t bgcolor) {
-	uint32_t i, j, n = 0;
-	uint32_t csymb = 0;
-	uint32_t count = 0;
+	uint32_t i, j;
+	uint32_t n = 0;
 	uint16_t b;
-	uint8_t quantsymb = 0;
+	uint32_t char_count = font.height * font.width * 2;
 
-	while (*(str + quantsymb)) {
-		quantsymb++;
+	if (char_count > sizeof(frm_buf)) {
+		return; // font too large for buffer
 	}
-	//quantsymb--;
-  while(*(str+n)) {
 
-      if(x + font.width >= ILI9341_WIDTH) {
-          x = 0;
-          y += font.height;
-          if(y + font.height >= ILI9341_HEIGHT) {
-              break;
-          }
+	while (*(str + n)) {
+		// Handle line wrapping
+		if (x + font.width > ILI9341_WIDTH) {
+			x = 0;
+			y += font.height;
+			if (y + font.height > ILI9341_HEIGHT) {
+				break;
+			}
+		}
 
-          if(*(str+n) == ' ') {
-              // skip spaces in the beginning of the new line
-              n++;
-              continue;
-          }
-      }
+		// Skip spaces at the beginning of a new line
+		if (x == 0 && *(str + n) == ' ') {
+			n++;
+			x += font.width;
+			continue;
+		}
 
+		// Render single character into frm_buf
+		for (i = 0; i < font.height; i++) {
+			b = font.data[(*(str + n) - 32) * font.height + i];
+			for (j = 0; j < font.width; j++) {
+				uint32_t offset = (i * font.width + j) * 2;
+				if ((b << j) & 0x8000) {
+					frm_buf[offset] = color >> 8;
+					frm_buf[offset + 1] = color & 0xFF;
+				} else {
+					frm_buf[offset] = bgcolor >> 8;
+					frm_buf[offset + 1] = bgcolor & 0xFF;
+				}
+			}
+		}
 
-      for(i = 0; i < font.height; i++) {
-          b = font.data[(*(str+n) - 32) * font.height + i];
-          for(j = 0; j < font.width; j++) {
-              if((b << j) & 0x8000)  {
-                frm_buf[2*i*font.width*quantsymb + 2*font.width*n + j*2] = color >> 8;
-                frm_buf[2*i*font.width*quantsymb + 2*font.width*n + j*2 + 1] = color & 0xFF;
-                //ILI9341_WriteData(data, sizeof(data));
-              } else {
-                frm_buf[2*i*font.width*quantsymb + 2*font.width*n + j*2] = bgcolor >> 8;
-                frm_buf[2*i*font.width*quantsymb + 2*font.width*n + j*2 +1] = bgcolor & 0xFF;
-                //ILI9341_WriteData(data, sizeof(data));
-              }
-          }
-      }
+		// Send character via DMA
+		ILI9341_Select();
+		ILI9341_SetAddressWindow(x, y, x + font.width - 1, y + font.height - 1);
+		HAL_GPIO_WritePin(ILI9341_DC_GPIO_Port, ILI9341_DC_Pin, GPIO_PIN_SET);
 
-      n++;
-      csymb++;
-  }
+		dma_spi_cnt = 1;
+		dma_spi_fl = 0;
+		HAL_SPI_Transmit_DMA(ILI9341_SPI_PORT, frm_buf, char_count);
+		uint32_t timeout = HAL_GetTick() + 1000;
+		while (!dma_spi_fl && HAL_GetTick() < timeout) {
+			osDelay(1);
+		}
+		dma_spi_fl = 0;
+		ILI9341_Unselect();
 
-  //csymb--;
-  ILI9341_Select();
-  ILI9341_SetAddressWindow(x, y, x + font.width*csymb - 1, y + font.height - 1);
-  count = (csymb)*2*font.height*font.width;
-  //n = QUANTPIXELLINE*2;
-  HAL_GPIO_WritePin(ILI9341_DC_GPIO_Port, ILI9341_DC_Pin, GPIO_PIN_SET);
-
-  dma_spi_cnt = 1;
-  HAL_SPI_Transmit_DMA(ILI9341_SPI_PORT, frm_buf, count);
-  while(!dma_spi_fl) {
-  	osDelay(1);
-  }
-  dma_spi_fl=0;
-
-  ILI9341_Unselect();
-
-
+		x += font.width;
+		n++;
+	}
 }
 
 

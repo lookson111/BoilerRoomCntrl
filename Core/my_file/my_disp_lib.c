@@ -161,18 +161,18 @@ short disp_out_lines(stDispMenu *dm, FontDef font) {
 		// Рисуем заголовки
 		ILI9341_FillRectangle(0, 0, 160, font.height, dm->clrRectLeft);
 		ILI9341_FillRectangle(160, 0, 160, font.height, dm->clrRectRight);
-		ILI9341_WriteString_DMA(12, 0, &str_title[0][0], font, dm->clrWordsLf, dm->clrRectLeft);
-		ILI9341_WriteString_DMA(12+160, 0, &str_title[1][0], font, dm->clrWordsRt, dm->clrRectRight);
+		ILI9341_WriteString(12, 0, &str_title[0][0], font, dm->clrWordsLf, dm->clrRectLeft);
+		ILI9341_WriteString(12+160, 0, &str_title[1][0], font, dm->clrWordsRt, dm->clrRectRight);
 		// отображаем пункты меню
 		for (uint16_t i = dm->diap_min; i < dm->diap_max; i++) {
 			if (dm->menu_data)
 				menu = &strMenuNameData[i][0];
 			else
 				menu = &strMenuNamePoint[i][0];
-		  ILI9341_WriteString_DMA(12, font.height * (i - dm->diap_min + title_line), menu, font, ILI9341_BLACK, ILI9341_WHITE);
+		  ILI9341_WriteString(12, font.height * (i - dm->diap_min + title_line), menu, font, ILI9341_BLACK, ILI9341_WHITE);
 		}
 		for (uint16_t i = dm->diap_max; i < lines_max; i++) {
-			ILI9341_WriteString_DMA(12, font.height * (i - dm->diap_min + title_line), strClearName, font, ILI9341_BLACK, ILI9341_WHITE);
+			ILI9341_WriteString(12, font.height * (i - dm->diap_min + title_line), strClearName, font, ILI9341_BLACK, ILI9341_WHITE);
 		}
 
 		dm->redrawDispMenu = 0;
@@ -183,10 +183,10 @@ short disp_out_lines(stDispMenu *dm, FontDef font) {
 			menu = &strMenuValsData[i][0];
 		else
 			menu = &strMenuValsPoint[i][0];
-		ILI9341_WriteString_DMA(12 * 18, font.height * (i - dm->diap_min + title_line), menu, font, ILI9341_BLACK, ILI9341_WHITE);
+		ILI9341_WriteString(12 * 18, font.height * (i - dm->diap_min + title_line), menu, font, ILI9341_BLACK, ILI9341_WHITE);
 	}
 	for (uint16_t i = dm->diap_max; i < lines_max; i++) {
-		ILI9341_WriteString_DMA(12 * 18, font.height * (i - dm->diap_min + title_line), str_clear, font, ILI9341_BLACK, ILI9341_WHITE);
+		ILI9341_WriteString(12 * 18, font.height * (i - dm->diap_min + title_line), str_clear, font, ILI9341_BLACK, ILI9341_WHITE);
 	}
 	// Конец записи данных в дисплей
 	return 0;

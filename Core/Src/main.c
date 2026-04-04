@@ -250,7 +250,7 @@ int main(void)
   sensReadTaskHandle = osThreadCreate(osThread(sensReadTask), NULL);
 
   /* definition and creation of dispTask */
-  osThreadDef(dispTask, StartDispTask, osPriorityNormal, 0, 400);
+  osThreadDef(dispTask, StartDispTask, osPriorityNormal, 0, 800);
   dispTaskHandle = osThreadCreate(osThread(dispTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
