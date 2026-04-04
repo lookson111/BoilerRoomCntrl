@@ -414,9 +414,6 @@ static void MX_RTC_Init(void)
 
   /* USER CODE END RTC_Init 0 */
 
-  RTC_TimeTypeDef sTime = {0};
-  RTC_DateTypeDef DateToUpdate = {0};
-
   /* USER CODE BEGIN RTC_Init 1 */
 
   /* USER CODE END RTC_Init 1 */
@@ -437,18 +434,18 @@ static void MX_RTC_Init(void)
 
   /** Initialize RTC and set the Time and Date
   */
-  sTime.Hours = 0;
-  sTime.Minutes = 5;
+  sTime.Hours = 12;
+  sTime.Minutes = 0;
   sTime.Seconds = 0;
 
   if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK)
   {
     Error_Handler();
   }
-  DateToUpdate.WeekDay = RTC_WEEKDAY_THURSDAY;
-  DateToUpdate.Month = RTC_MONTH_MAY;
-  DateToUpdate.Date = 28;
-  DateToUpdate.Year = 20;
+  DateToUpdate.WeekDay = RTC_WEEKDAY_MONDAY;
+  DateToUpdate.Month = RTC_MONTH_JANUARY;
+  DateToUpdate.Date = 1;
+  DateToUpdate.Year = 25;
 
   if (HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN) != HAL_OK)
   {
