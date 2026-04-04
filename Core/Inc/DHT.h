@@ -33,12 +33,12 @@ written by Adafruit Industries
 #define    SCB_DEMCR     *(volatile unsigned long *)0xE000EDFC
 */
 
-uint8_t data[6];
-uint8_t _pin, _type, _count;
+extern uint8_t data[6];
+extern uint8_t _pin, _type, _count;
 void pinMode(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin, char fl);
 char read(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin);
-unsigned long _lastreadtime;
-char firstreading;
+extern unsigned long _lastreadtime;
+extern char firstreading;
 
 
 void begin(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin);

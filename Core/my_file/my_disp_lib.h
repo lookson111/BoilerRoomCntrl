@@ -38,7 +38,7 @@ typedef struct {
 	uint32_t pwm_tmp;
 } stDispMenu;
 
-stDispMenu dm;
+extern stDispMenu dm;
 void disp_init (stDispMenu *dm);
 void disp_time_view(stDispMenu *dm, RTC_HandleTypeDef *hrtc, RTC_TimeTypeDef *sTime, RTC_DateTypeDef *sDate);
 short disp_out_lines(stDispMenu *dm, FontDef font);

@@ -42,19 +42,19 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-uint32_t wtr_flow_met;
-int count_lt;
-int count_rt;
-int8_t enterButton;
-int8_t fl_on_off;
-uint8_t buff[32];
-uint8_t cout_rcvUART;
-uint8_t fl_transmit_485;
-uint32_t tim4cnt;
+extern uint32_t wtr_flow_met;
+extern int count_lt;
+extern int count_rt;
+extern int8_t enterButton;
+extern int8_t fl_on_off;
+extern uint8_t buff[32];
+extern uint8_t cout_rcvUART;
+extern uint8_t fl_transmit_485;
+extern uint32_t tim4cnt;
 
-ModBusTypeDef modBusData;
-uint8_t fl_endreceive485;
-uint8_t slaveID;
+extern ModBusTypeDef modBusData;
+extern uint8_t fl_endreceive485;
+extern uint8_t slaveID;
 enum
 {
     BR_U321_WtrFlowMet
@@ -69,7 +69,7 @@ enum
 //  ,ADC_FL2_DHTHumidt
   ,HOLDING_REGS_SIZE_BR
 };
-uint16_t holdingRegs[HOLDING_REGS_SIZE_BR];
+extern uint16_t holdingRegs[HOLDING_REGS_SIZE_BR];
 
 /* USER CODE END EC */
 

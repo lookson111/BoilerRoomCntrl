@@ -1,6 +1,10 @@
 # Build artifacts
 Debug/
 Release/
+*.bin
+*.elf
+*.hex
+*.map
 
 # Object files
 *.o
@@ -14,3 +18,6 @@ Release/
 # OS
 .DS_Store
 Thumbs.db
+
+# Qwen
+.qwen/

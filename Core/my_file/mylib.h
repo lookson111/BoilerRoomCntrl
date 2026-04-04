@@ -59,13 +59,15 @@ enum {
 	en_tr4,
 	en_tr3,
 	enTrChanEnd
-} enChannelsTr;
+};
+extern int enChannelsTr;
 
 enum {
 	en_pm1,		// датчик давления в системе отопления
 	en_pm2,
 	enPmChanEnd
-} enChannelsPm;
+};
+extern int enChannelsPm;
 
 uint32_t ADC_Avg_result(AdcAverage *adcavg);
 void ADC_Avg_init(AdcAverage *adcavg, uint8_t qty, uint8_t qty_of_el);

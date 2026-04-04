@@ -99,6 +99,41 @@ uint32_t pmavgadc[enPmChanEnd];
 uint8_t dma_spi_fl=0;
 uint32_t dma_spi_cnt=1;
 
+/* Global variable definitions (declared extern in main.h) */
+uint32_t wtr_flow_met = 0;
+int count_lt = 0;
+int count_rt = 0;
+int8_t enterButton = 0;
+int8_t fl_on_off = 0;
+uint8_t buff[32] = {0};
+uint8_t cout_rcvUART = 0;
+uint8_t fl_transmit_485 = 0;
+uint32_t tim4cnt = 0;
+ModBusTypeDef modBusData;
+uint8_t fl_endreceive485 = 0;
+uint8_t slaveID = 1;
+uint16_t holdingRegs[HOLDING_REGS_SIZE_BR] = {0};
+
+/* DHT global definitions (declared extern in DHT.h) */
+uint8_t data[6] = {0};
+uint8_t _pin = 0, _type = 0, _count = 0;
+unsigned long _lastreadtime = 0;
+char firstreading = 1;
+
+/* ILI9341 SPI port */
+SPI_HandleTypeDef *ILI9341_SPI_PORT;
+
+/* Menu arrays (declared extern in mymenu.h) - defined in mymenu.c */
+char strMenuValsData[menuCountElements][7] = {0};
+char strMenuValsPoint[menuPCountElements][7] = {0};
+
+/* Channel enums */
+int enChannelsTr = en_tr1;
+int enChannelsPm = en_pm1;
+
+/* Display menu */
+stDispMenu dm = {0};
+
 
 
 

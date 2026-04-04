@@ -18,7 +18,7 @@
 
 /*** Redefine if necessary ***/
 //#define ILI9341_SPI_PORT hspi2
-SPI_HandleTypeDef *ILI9341_SPI_PORT;
+extern SPI_HandleTypeDef *ILI9341_SPI_PORT;
 
 #define ILI9341_RES_Pin       GPIO_PIN_8
 #define ILI9341_RES_GPIO_Port GPIOA

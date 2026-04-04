@@ -81,12 +81,12 @@ static const char strClearName[]  = {0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0
 static const char str_on[]				= {0xc2, 0xea, 0xeb, 0x2e, 0x20, 0x20, 0x00}; // Вкл.
 static const char str_off[]				= {0xce, 0xf2, 0xea, 0xeb, 0x2e, 0x20, 0x00}; // Откл.
 static const char str_clear[]			= {0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00}; //
-const char strMenuNameData[menuCountElements][CNTMSYMINSTR];
-const char strMenuNamePoint[menuPCountElements][CNTMSYMINSTR];
-const char strMenuTypeValPoint[menuPCountElements];
+extern const char strMenuNameData[menuCountElements][CNTMSYMINSTR];
+extern const char strMenuNamePoint[menuPCountElements][CNTMSYMINSTR];
+extern const char strMenuTypeValPoint[menuPCountElements];
 
-char strMenuValsData[menuCountElements][7];
-char strMenuValsPoint[menuPCountElements][7];
+extern char strMenuValsData[menuCountElements][7];
+extern char strMenuValsPoint[menuPCountElements][7];
 
 
 #endif /* MY_FILE_MYMENU_H_ */
