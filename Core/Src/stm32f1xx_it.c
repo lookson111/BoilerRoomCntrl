@@ -52,10 +52,10 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t b_ER1 = 0;
-uint8_t b_ER2 = 0;
-uint8_t b_rt = 0;
-uint8_t b_lt = 0;
+volatile uint8_t b_ER1 = 0;
+volatile uint8_t b_ER2 = 0;
+volatile uint8_t b_rt = 0;
+volatile uint8_t b_lt = 0;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -67,7 +67,9 @@ extern UART_HandleTypeDef huart3;
 extern TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN EV */
-
+extern int count_lt;
+extern int count_rt;
+extern int8_t enterButton;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -216,30 +218,32 @@ void TIM1_UP_IRQHandler(void)
   */
 void TIM2_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM2_IRQn 0 */
-	// Обрабатываем нажате кнопок
-	b_ER1 = HAL_GPIO_ReadPin(ER11_LINE1_GPIO_Port, ER11_LINE1_Pin);
-	b_ER2 = HAL_GPIO_ReadPin(ER11_LINE2_GPIO_Port, ER11_LINE2_Pin);
-	if (!b_ER1 & !b_ER2) {
+	// Check if update interrupt flag is set
+	if (TIM2->SR & TIM_SR_UIF) {
+		// Clear the update interrupt flag
+		TIM2->SR &= ~TIM_SR_UIF;
+		
+		// Handle button presses - debounce sampling
+		b_ER1 = HAL_GPIO_ReadPin(ER11_LINE1_GPIO_Port, ER11_LINE1_Pin);
+		b_ER2 = HAL_GPIO_ReadPin(ER11_LINE2_GPIO_Port, ER11_LINE2_Pin);
+		
+		// Check which button is pressed after debounce delay
+		if (b_ER1 == GPIO_PIN_SET) {
+			// Left button (LINE1) confirmed pressed
+			count_lt++;
+		} else if (b_ER2 == GPIO_PIN_SET) {
+			// Right button (LINE2) confirmed pressed  
+			count_lt--;
+		}
+		
+		// Clear latches
 		b_lt = 0;
 		b_rt = 0;
+		
+		// Stop TIM2 (one-shot mode)
+		TIM2->CR1 &= ~TIM_CR1_CEN;
+		TIM2->DIER &= ~TIM_DIER_UIE;
 	}
-	if (b_ER1 & b_ER2) {
-		if (b_lt) {
-			count_lt--;
-			b_lt = 0;
-		}
-		if (b_rt) {
-			count_lt++;
-			b_rt = 0;
-		}
-	}
-	TIM2->CR1 ^= TIM_CR1_CEN;
-  /* USER CODE END TIM2_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim2);
-  /* USER CODE BEGIN TIM2_IRQn 1 */
-
-  /* USER CODE END TIM2_IRQn 1 */
 }
 
 /**
@@ -331,39 +335,41 @@ void USART3_IRQHandler(void)
 void EXTI15_10_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI15_10_IRQn 0 */
-  if (EXTI->PR & (1<<12)) // Прерывание от EXTI12?
-  {
-  	EXTI->PR |= (1<<12); // Сбросить флаг EXTI12.
-        // Обработка события EXTI12
+  // EXTI12: Enter button
+  if (EXTI->PR & (1<<12)) {
+  	EXTI->PR |= (1<<12); // Clear EXTI12 flag
   	if (HAL_GPIO_ReadPin(ER11_BUTTON_GPIO_Port, ER11_BUTTON_Pin)) {
   		enterButton = 1;
   	}
   }
-	if (EXTI->PR & (1<<11)) //(b_ER1 & !enterButton) {
-	{
-  	TIM2->ARR = 2000;
-  	TIM2->CNT = 0;
-  	TIM2->DIER |= TIM_DIER_UIE;
-  	TIM2->CR1 |= TIM_CR1_CEN;
-  	if (!b_rt) {
-  		b_lt = 1;
+  
+  // EXTI11: LINE2 (Right) button - start debounce timer
+  if (EXTI->PR & (1<<11)) {
+  	EXTI->PR |= (1<<11); // Clear EXTI11 flag
+  	// Only start timer if not already running
+  	if (!(TIM2->CR1 & TIM_CR1_CEN)) {
+  		TIM2->ARR = 2000;  // ~55us debounce at 72MHz
+  		TIM2->CNT = 0;
+  		TIM2->DIER |= TIM_DIER_UIE;
+  		TIM2->CR1 |= TIM_CR1_CEN;
   	}
-	}
-	if (EXTI->PR & (1<<10)) {//(b_ER2 & !enterButton) {
-  	TIM2->ARR = 2000;
-  	TIM2->CNT = 0;
-  	TIM2->DIER |= TIM_DIER_UIE;
-  	TIM2->CR1 |= TIM_CR1_CEN;
-  	if (!b_lt) {
-  		b_rt = 1;
+  }
+  
+  // EXTI10: LINE1 (Left) button - start debounce timer
+  if (EXTI->PR & (1<<10)) {
+  	EXTI->PR |= (1<<10); // Clear EXTI10 flag
+  	// Only start timer if not already running
+  	if (!(TIM2->CR1 & TIM_CR1_CEN)) {
+  		TIM2->ARR = 2000;  // ~55us debounce at 72MHz
+  		TIM2->CNT = 0;
+  		TIM2->DIER |= TIM_DIER_UIE;
+  		TIM2->CR1 |= TIM_CR1_CEN;
   	}
-	}
-  /* USER CODE END EXTI15_10_IRQn 0 */
+  }
+  
   HAL_GPIO_EXTI_IRQHandler(ER11_LINE1_Pin);
   HAL_GPIO_EXTI_IRQHandler(ER11_LINE2_Pin);
   HAL_GPIO_EXTI_IRQHandler(ER11_BUTTON_Pin);
-  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
-
   /* USER CODE END EXTI15_10_IRQn 1 */
 }
 
