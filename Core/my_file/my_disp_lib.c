@@ -44,22 +44,18 @@ void disp_init (stDispMenu *dm) {
 
 void disp_time_view(stDispMenu *dm, RTC_HandleTypeDef *hrtc, RTC_TimeTypeDef *sTime, RTC_DateTypeDef *sDate)
 {
-	char humad[7];
-	char time[10];
+	char time[9];
 	// обновление времени
 	HAL_RTC_GetTime(hrtc, sTime, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(hrtc, sDate, RTC_FORMAT_BIN);
-	inttochar(humad, (uint32_t)sTime->Hours);
-	time[0] = humad[4];
-	time[1] = humad[5];
+	time[0] = '0' + (sTime->Hours / 10);
+	time[1] = '0' + (sTime->Hours % 10);
 	time[2] = ':';
-	inttochar(humad, (uint32_t)sTime->Minutes);
-	time[3] = humad[4];
-	time[4] = humad[5];
+	time[3] = '0' + (sTime->Minutes / 10);
+	time[4] = '0' + (sTime->Minutes % 10);
 	time[5] = ':';
-	inttochar(humad, (uint32_t)sTime->Seconds);
-	time[6] = humad[4];
-	time[7] = humad[5];
+	time[6] = '0' + (sTime->Seconds / 10);
+	time[7] = '0' + (sTime->Seconds % 10);
 	time[8] = 0x00;
 	ILI9341_WriteString(12 * 19, (240-15), time, Font_12x15, ILI9341_BLACK, ILI9341_WHITE);
 	// конец обновления времени
