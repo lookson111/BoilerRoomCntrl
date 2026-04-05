@@ -68,28 +68,27 @@ void _exit(int status)
 
 __attribute__((weak)) int _read(int file, char* ptr, int len)
 {
-    int DataIdx;
-
-    for (DataIdx = 0; DataIdx < len; DataIdx++) {
-        *ptr++ = __io_getchar();
-    }
-
-    return len;
+    (void)file;
+    (void)ptr;
+    (void)len;
+    /* No stdin in bare-metal — return 0 (no data available) */
+    return 0;
 }
 
 __attribute__((weak)) int _write(int file, char* ptr, int len)
 {
-    int DataIdx;
-
-    for (DataIdx = 0; DataIdx < len; DataIdx++) {
-        __io_putchar(*ptr++);
-    }
+    (void)file;
+    (void)ptr;
+    (void)len;
+    /* No stdout/stderr in bare-metal — discard output */
     return len;
 }
 
 int _close(int file)
 {
-    return -1;
+    (void)file;
+    /* Nothing to close in bare-metal */
+    return 0;
 }
 
 
@@ -106,6 +105,10 @@ int _isatty(int file)
 
 int _lseek(int file, int ptr, int dir)
 {
+    (void)file;
+    (void)ptr;
+    (void)dir;
+    /* No file seeking in bare-metal — return current position (0) */
     return 0;
 }
 

@@ -58,7 +58,7 @@ LDFLAGS  += -T$(LDSCRIPT)
 LDFLAGS  += -Wl,--gc-sections
 LDFLAGS  += -Wl,--print-memory-usage
 LDFLAGS  += -Wl,-Map=$(BUILD_DIR)/BoilerRoomCntrl.map
-LDFLAGS  += --specs=nano.specs -lc -lnosys -lm
+LDFLAGS  += --specs=nano.specs -lc -lm
 
 # Source files
 C_SRCS := \
