@@ -1,7 +1,15 @@
 # Standalone Makefile for BoilerRoomCntrl
 # Build on Linux with arm-none-eabi-gcc
 
-TARGET   := BoilerRoomCntrl.elf
+# Build configuration: Debug or Release
+# Usage: make BUILD_TYPE=Debug   (default)
+#        make BUILD_TYPE=Release
+BUILD_TYPE ?= Debug
+
+# Output directory
+BUILD_DIR := $(BUILD_TYPE)
+
+TARGET   := $(BUILD_DIR)/BoilerRoomCntrl.elf
 CC       := arm-none-eabi-gcc
 OBJCOPY  := arm-none-eabi-objcopy
 SIZE     := arm-none-eabi-size
@@ -13,11 +21,23 @@ FLOAT-ABI := -mfloat-abi=soft
 THUMB    := -mthumb
 CSTD     := -std=gnu11
 
-CFLAGS   := $(CPU) $(CSTD) -g3 $(FLOAT-ABI) $(THUMB)
-CFLAGS   += -DUSE_HAL_DRIVER -DSTM32F103xB
-CFLAGS   += -ffunction-sections -fdata-sections
-CFLAGS   += -Wall -fstack-usage
-CFLAGS   += -MMD -MP
+# Build-type-specific flags
+ifeq ($(BUILD_TYPE),Debug)
+  OPT       := -O0
+  CFLAGS    := $(CPU) $(CSTD) -g3 $(FLOAT-ABI) $(THUMB) $(OPT)
+  CFLAGS    += -DUSE_HAL_DRIVER -DSTM32F103xB -DDEBUG
+  CFLAGS    += -Wall -fstack-usage
+else ifeq ($(BUILD_TYPE),Release)
+  OPT       := -Os
+  CFLAGS    := $(CPU) $(CSTD) -g0 $(FLOAT-ABI) $(THUMB) $(OPT)
+  CFLAGS    += -DUSE_HAL_DRIVER -DSTM32F103xB -DNDEBUG
+  CFLAGS    += -Wall -fstack-usage
+else
+  $(error Unknown BUILD_TYPE: $(BUILD_TYPE). Use Debug or Release)
+endif
+
+CFLAGS    += -ffunction-sections -fdata-sections
+CFLAGS    += -MMD -MP -MP
 
 # Include paths
 INCLUDES := \
@@ -36,7 +56,7 @@ LDFLAGS  := $(CPU) $(FLOAT-ABI) $(THUMB)
 LDFLAGS  += -T$(LDSCRIPT)
 LDFLAGS  += -Wl,--gc-sections
 LDFLAGS  += -Wl,--print-memory-usage
-LDFLAGS  += -Wl,-Map=$(TARGET:.elf=.map)
+LDFLAGS  += -Wl,-Map=$(BUILD_DIR)/BoilerRoomCntrl.map
 LDFLAGS  += --specs=nano.specs -lc -lnosys -lm
 
 # Source files
@@ -92,12 +112,17 @@ C_SRCS := \
 ASM_SRCS := \
   Core/Startup/startup_stm32f103cbtx.s
 
-# Object files
-OBJS := $(C_SRCS:.c=.o) $(ASM_SRCS:.s=.o)
+# Object files — redirected to build directory
+OBJS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(C_SRCS)) \
+        $(patsubst %.s,$(BUILD_DIR)/%.o,$(ASM_SRCS))
 DEPS := $(OBJS:.o=.d)
 
 # Default target
-all: $(TARGET) $(TARGET:.elf=.bin) $(TARGET:.elf=.hex) size
+all: create_build_dir $(TARGET) $(TARGET:.elf=.bin) $(TARGET:.elf=.hex) size
+
+# Create build directory
+create_build_dir:
+	@mkdir -p $(BUILD_DIR)
 
 # Link
 $(TARGET): $(OBJS)
@@ -115,12 +140,14 @@ $(TARGET): $(OBJS)
 	$(OBJCOPY) -O ihex $< $@
 
 # Compile C
-%.o: %.c
+$(BUILD_DIR)/%.o: %.c
+	@mkdir -p $(dir $@)
 	@echo "Compiling $<"
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 # Assemble
-%.o: %.s
+$(BUILD_DIR)/%.o: %.s
+	@mkdir -p $(dir $@)
 	@echo "Assembling $<"
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
@@ -131,9 +158,13 @@ size: $(TARGET)
 
 # Clean
 clean:
-	rm -rf $(OBJS) $(DEPS) $(TARGET) $(TARGET:.elf=.map) $(TARGET:.elf=.bin) $(TARGET:.elf=.hex)
+	rm -rf $(BUILD_DIR)
+
+# Clean all build types
+clean_all:
+	rm -rf Debug Release
 
 # Dependencies
 -include $(DEPS)
 
-.PHONY: all clean size
+.PHONY: all clean clean_all size create_build_dir
