@@ -1,12 +1,12 @@
 /*
- * mytime.h
+ * dwt_timer.h
  *
  *  Created on: Jan 17, 2021
  *      Author: Rinat
  */
 
-#ifndef MY_FILE_MYTIME_H_
-#define MY_FILE_MYTIME_H_
+#ifndef INC_DWT_TIMER_H_
+#define INC_DWT_TIMER_H_
 
 #include "main.h"
 //#include "DHT.h"
@@ -22,4 +22,4 @@ void DWT_Init(void);
 void delay_us(uint32_t us);
 uint32_t millis(void);
 
-#endif /* MY_FILE_MYTIME_H_ */
+#endif /* INC_DWT_TIMER_H_ */

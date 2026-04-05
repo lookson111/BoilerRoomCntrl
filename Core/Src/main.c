@@ -28,11 +28,11 @@
 #include "../ili9341/fonts.h"
 #include "../ili9341/testimg.h"
 //#include "stm32f10x_gpio.h"
-#include "../my_file/mylib.h"
-#include "../my_file/my_sensors.h"
+#include "../app/hal_utils.h"
+#include "../app/thermistor_table.h"
 #include "stdint.h"
 #include <string.h>
-#include "../my_file/my_disp_lib.h"
+#include "../app/lcd_ui.h"
 
 /* USER CODE END Includes */
 

@@ -1,10 +1,10 @@
 /*
- * mylib.c
+ * hal_utils.c
  *
  *  Created on: 5 мая 2020 г.
  *      Author: Rinat
  */
-#include "mylib.h"
+#include "hal_utils.h"
 
 void fltochar(char* tmpl, float fltdata) {
 	float fltData = fltdata;

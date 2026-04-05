@@ -1,12 +1,12 @@
 /*
- * my_sensors.h
+ * thermistor_table.h
  *
  *  Created on: 21 мая 2020 г.
  *      Author: Rinat
  */
 
-#ifndef MY_FILE_MY_SENSORS_H_
-#define MY_FILE_MY_SENSORS_H_
+#ifndef INC_THERMISTOR_TABLE_H_
+#define INC_THERMISTOR_TABLE_H_
 
 #include "stdint.h"
 
@@ -173,4 +173,4 @@ static const unsigned int tTR_temper_volt_arr[151] = {
 		339968,
 };
 
-#endif /* MY_FILE_MY_SENSORS_H_ */
+#endif /* INC_THERMISTOR_TABLE_H_ */

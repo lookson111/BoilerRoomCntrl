@@ -1,11 +1,11 @@
 /*
- * mymenu.c
+ * menu_strings.c
  *
  *  Created on: Jan 17, 2021
  *      Author: Rinat
  */
 
-#include "mymenu.h"
+#include "menu_strings.h"
 
 
 const char strMenuNameData[menuCountElements][CNTMSYMINSTR] =

@@ -1,11 +1,11 @@
 /*
- * mytime.c
+ * dwt_timer.c
  *
  *  Created on: Jan 17, 2021
  *      Author: Rinat
  */
 
-#include "mytime.h"
+#include "dwt_timer.h"
 
 void DWT_Init(void)
 {

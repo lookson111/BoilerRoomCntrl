@@ -42,6 +42,7 @@ CFLAGS    += -MMD -MP -MP
 # Include paths
 INCLUDES := \
   -ICore/Inc \
+  -ICore/app \
   -IDrivers/STM32F1xx_HAL_Driver/Inc \
   -IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy \
   -IDrivers/CMSIS/Device/ST/STM32F1xx/Include \
@@ -73,11 +74,11 @@ C_SRCS := \
   Core/ili9341/ili9341_touch.c \
   Core/ili9341/fonts.c \
   Core/modbus/SimpleModbusSlave.c \
-  Core/my_file/my_disp_lib.c \
-  Core/my_file/my_sensors.c \
-  Core/my_file/mylib.c \
-  Core/my_file/mymenu.c \
-  Core/my_file/mytime.c \
+  Core/app/lcd_ui.c \
+  Core/app/thermistor_table.c \
+  Core/app/hal_utils.c \
+  Core/app/menu_strings.c \
+  Core/app/dwt_timer.c \
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c \
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c \

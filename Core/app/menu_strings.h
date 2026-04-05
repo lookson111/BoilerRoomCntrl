@@ -1,12 +1,12 @@
 /*
- * mymenu.h
+ * menu_strings.h
  *
  *  Created on: Jan 17, 2021
  *      Author: Rinat
  */
 
-#ifndef MY_FILE_MYMENU_H_
-#define MY_FILE_MYMENU_H_
+#ifndef INC_MENU_STRINGS_H_
+#define INC_MENU_STRINGS_H_
 
 
 #define MENUCOUNTPARAM 11  //8+3
@@ -96,4 +96,4 @@ extern char strMenuValsData[menuCountElements][7];
 extern char strMenuValsPoint[menuPCountElements][7];
 
 
-#endif /* MY_FILE_MYMENU_H_ */
+#endif /* INC_MENU_STRINGS_H_ */

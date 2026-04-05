@@ -1,19 +1,19 @@
 /*
- * my_disp_lib.h
+ * lcd_ui.h
  *
  *  Created on: May 31, 2020
  *      Author: Rinat
  */
 
-#ifndef MY_FILE_MY_DISP_LIB_H_
-#define MY_FILE_MY_DISP_LIB_H_
+#ifndef INC_LCD_UI_H_
+#define INC_LCD_UI_H_
 
 #include "stm32f1xx_hal.h"
 #include "cmsis_os.h"
 #include "main.h"
 #include "../ili9341/fonts.h"
-#include "mymenu.h"
-#include "mytime.h"
+#include "menu_strings.h"
+#include "dwt_timer.h"
 
 //char strMenuValsData[menuCountElements][7];
 //char strMenuValsPoint[menuPCountElements][7];
@@ -59,4 +59,4 @@ void disp_set_time(stDispMenu *dm, RTC_HandleTypeDef *hrtc);
 
 
 
-#endif /* MY_FILE_MY_DISP_LIB_H_ */
+#endif /* INC_LCD_UI_H_ */

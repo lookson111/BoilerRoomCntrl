@@ -1,14 +1,14 @@
 /*
- * my_disp_lib.c
+ * lcd_ui.c
  *
  *  Created on: May 31, 2020
  *      Author: Rinat
  */
 
-#include "my_disp_lib.h"
+#include "lcd_ui.h"
 
 #include "../ili9341/ili9341.h"
-#include "mylib.h"
+#include "hal_utils.h"
 #include "stdint.h"
 #include <string.h>
 

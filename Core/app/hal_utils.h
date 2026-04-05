@@ -1,12 +1,12 @@
 /*
- * mylib.h
+ * hal_utils.h
  *
  *  Created on: 5 мая 2020 г.
  *      Author: Rinat
  */
 
-#ifndef INC_MYLIB_H_
-#define INC_MYLIB_H_
+#ifndef INC_HAL_UTILS_H_
+#define INC_HAL_UTILS_H_
 
 #include <stdint.h>
 #include "stm32f1xx_hal.h"
@@ -81,4 +81,4 @@ void workManagePressHeatingSys(StManagePressHeatingSys *st, uint32_t adc_volt, u
 void measManagePressHeatingSys(StManagePressHeatingSys *st, uint32_t adc_volt, uint32_t time);
 
 
-#endif /* INC_MYLIB_H_ */
+#endif /* INC_HAL_UTILS_H_ */
