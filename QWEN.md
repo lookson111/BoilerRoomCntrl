@@ -169,12 +169,9 @@ The following changes were made to ensure compatibility with modern ARM GCC (13.
 
 ## Known Issues / Notes
 
-1. ~~**No mutex/semaphore for shared data:**~~ **FIXED** — `sensorDataMutexHandle` protects `DHT22Temp`, `DHT22Hum`, `travg[]`, and `pmavg[]` with `osMutexWait`/`osMutexRelease` in both `sensReadTask` and `dispTask`.
-2. ~~**`millis()` returns DWT cycle count, not milliseconds:**~~ **FIXED** — `millis()` now returns actual milliseconds by dividing DWT cycle count by `SystemCoreClock / 1000`. All callers using the `72000` multiplier have been corrected.
-3. **Two display drivers:** Both `ili9341.c` and `disp_spi.c` (ST7789VW) exist. Active code uses `ili9341.c`.
-4. ~~**Duplicate pin assignment:**~~ **NOT A BUG** — `Water_Heat_Home` is PB9 and `wtr_hm_in` is PA5. They are different pins. The `rel_manage[]` array is correct.
-5. **Touch panel not fully configured:** SPI1 for XPT2046 is referenced but not configured in `.ioc`.
-6. **ITFLOAT editing stub:** The value increment/decrement logic for ITFLOAT items is still a placeholder (empty bodies in the edit loop). ITINT items for time editing are fully implemented.
+1. **Two display drivers:** Both `ili9341.c` and `disp_spi.c` (ST7789VW) exist. Active code uses `ili9341.c`.
+2. **Touch panel not fully configured:** SPI1 for XPT2046 is referenced but not configured in `.ioc`.
+3. **ITFLOAT editing stub:** The value increment/decrement logic for ITFLOAT items is still a placeholder (empty bodies in the edit loop). ITINT items for time editing are fully implemented.
 
 ## Branches
 

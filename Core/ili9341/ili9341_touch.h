@@ -3,6 +3,8 @@
 #define __ILI9341_TOUCH_H__
 
 #include <stdbool.h>
+#include <stdint.h>
+#include "stm32f1xx_hal.h"
 
 /*** Redefine if necessary ***/
 

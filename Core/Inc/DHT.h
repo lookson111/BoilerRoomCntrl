@@ -2,8 +2,8 @@
 #define DHT_H
 
 
-#include "main.h"
 #include "../app/dwt_timer.h"
+#include "main.h"
 /* DHT library 
 
 MIT license
@@ -13,20 +13,20 @@ written by Adafruit Industries
 // how many timing transitions we need to keep track of. 2 * number bits + extra
 #define MAXTIMINGS 85
 
-#define DHT11 11
-#define DHT22 22
-#define DHT21 21
+#define DHT11  11
+#define DHT22  22
+#define DHT21  21
 #define AM2301 21
 
 
-#define NAN 0x00
+#define NAN  0x00
 #define HIGH 0x01
 
-#define TRUE 0x01
+#define TRUE  0x01
 #define FALSE 0x00
 
-#define INPUT 	0x01
-#define OUTPUT  0x00
+#define INPUT  0x01
+#define OUTPUT 0x00
 /*
 #define    DWT_CYCCNT    *(volatile unsigned long *)0xE0001004
 #define    DWT_CONTROL   *(volatile unsigned long *)0xE0001000
@@ -46,7 +46,7 @@ float convertCtoF(float);
 float readHumidity(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin);
 float readTemperature(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin, char S);
 
-char  dataRead(float* tmp, float* hum);
+char dataRead(float* tmp, float* hum);
 /*
 void DWT_Init(void);
 void delay_us(uint32_t us);

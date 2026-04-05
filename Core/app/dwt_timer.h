@@ -11,12 +11,12 @@
 #include "main.h"
 //#include "DHT.h"
 #include "FreeRTOS.h"
-#include "task.h"
 #include "cmsis_os.h"
+#include "task.h"
 
-#define    DWT_CYCCNT    *(volatile unsigned long *)0xE0001004
-#define    DWT_CONTROL   *(volatile unsigned long *)0xE0001000
-#define    SCB_DEMCR     *(volatile unsigned long *)0xE000EDFC
+#define DWT_CYCCNT  *(volatile unsigned long*)0xE0001004
+#define DWT_CONTROL *(volatile unsigned long*)0xE0001000
+#define SCB_DEMCR   *(volatile unsigned long*)0xE000EDFC
 
 void DWT_Init(void);
 void delay_us(uint32_t us);

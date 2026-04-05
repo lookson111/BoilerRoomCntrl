@@ -50,45 +50,43 @@
 */
 
 
-#include "stm32f1xx_hal.h"
 #include "stdint.h"
+#include "stm32f1xx_hal.h"
 
 
 #define BUFFER_SIZE_485 64
 
-typedef struct {
-	uint8_t frame[BUFFER_SIZE_485];
-	uint16_t holdingRegsSize; // size of the register array
-	uint16_t* regs; // user array address
-	uint8_t broadcastFlag;
-	uint8_t slaveID;
-	uint8_t function;
-	uint8_t available;
-	uint8_t buffer;
-	uint8_t bufferSize;
-	//GPIO_TypeDef* TxEnable_Port;
-	//uint16_t TxEnablePin;
-	uint16_t errorCount;
-	uint16_t T1_5; // inter character time out
-	uint16_t T3_5; // frame delay
-	uint32_t baud;
-	UART_HandleTypeDef *uart;
+typedef struct
+{
+    uint8_t frame[BUFFER_SIZE_485];
+    uint16_t holdingRegsSize; // size of the register array
+    uint16_t* regs;           // user array address
+    uint8_t broadcastFlag;
+    uint8_t slaveID;
+    uint8_t function;
+    uint8_t available;
+    uint8_t buffer;
+    uint8_t bufferSize;
+    //GPIO_TypeDef* TxEnable_Port;
+    //uint16_t TxEnablePin;
+    uint16_t errorCount;
+    uint16_t T1_5; // inter character time out
+    uint16_t T3_5; // frame delay
+    uint32_t baud;
+    UART_HandleTypeDef* uart;
 } ModBusTypeDef;
 
 // function definitions
 
-void modbus_configure(ModBusTypeDef *modBusData,
-											UART_HandleTypeDef *_uart,
-											uint8_t _slaveID,
-											//GPIO_TypeDef *_TxEnable_Port,
-											//uint16_t _TxEnablePin,
-											uint16_t _holdingRegsSize,
-											uint16_t*  _regs);
-void modbus_update_comms(ModBusTypeDef *modBusData, uint32_t baud);
-uint16_t modbus_update(ModBusTypeDef *modBusData);
+void modbus_configure(ModBusTypeDef* modBusData, UART_HandleTypeDef* _uart, uint8_t _slaveID,
+                      //GPIO_TypeDef *_TxEnable_Port,
+                      //uint16_t _TxEnablePin,
+                      uint16_t _holdingRegsSize, uint16_t* _regs);
+void modbus_update_comms(ModBusTypeDef* modBusData, uint32_t baud);
+uint16_t modbus_update(ModBusTypeDef* modBusData);
 // function definitions
-void exceptionResponse(ModBusTypeDef *modBusData, uint8_t exception);
-uint16_t calculateCRC(ModBusTypeDef *modBusData, uint8_t bufferSize);
-void sendPacket(ModBusTypeDef *modBusData, uint8_t bufferSize);
+void exceptionResponse(ModBusTypeDef* modBusData, uint8_t exception);
+uint16_t calculateCRC(ModBusTypeDef* modBusData, uint8_t bufferSize);
+void sendPacket(ModBusTypeDef* modBusData, uint8_t bufferSize);
 
 #endif

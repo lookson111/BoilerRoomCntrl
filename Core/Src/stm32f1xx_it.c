@@ -19,8 +19,8 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 #include "stm32f1xx_it.h"
+#include "main.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -32,7 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
- 
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -80,12 +80,12 @@ extern int8_t enterButton;
   */
 void NMI_Handler(void)
 {
-  /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
+    /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
 
-  /* USER CODE END NonMaskableInt_IRQn 0 */
-  /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
+    /* USER CODE END NonMaskableInt_IRQn 0 */
+    /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
 
-  /* USER CODE END NonMaskableInt_IRQn 1 */
+    /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
 /**
@@ -93,14 +93,13 @@ void NMI_Handler(void)
   */
 void HardFault_Handler(void)
 {
-  /* USER CODE BEGIN HardFault_IRQn 0 */
+    /* USER CODE BEGIN HardFault_IRQn 0 */
 
-  /* USER CODE END HardFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-    /* USER CODE END W1_HardFault_IRQn 0 */
-  }
+    /* USER CODE END HardFault_IRQn 0 */
+    while (1) {
+        /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+        /* USER CODE END W1_HardFault_IRQn 0 */
+    }
 }
 
 /**
@@ -108,14 +107,13 @@ void HardFault_Handler(void)
   */
 void MemManage_Handler(void)
 {
-  /* USER CODE BEGIN MemoryManagement_IRQn 0 */
+    /* USER CODE BEGIN MemoryManagement_IRQn 0 */
 
-  /* USER CODE END MemoryManagement_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
-    /* USER CODE END W1_MemoryManagement_IRQn 0 */
-  }
+    /* USER CODE END MemoryManagement_IRQn 0 */
+    while (1) {
+        /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+        /* USER CODE END W1_MemoryManagement_IRQn 0 */
+    }
 }
 
 /**
@@ -123,14 +121,13 @@ void MemManage_Handler(void)
   */
 void BusFault_Handler(void)
 {
-  /* USER CODE BEGIN BusFault_IRQn 0 */
+    /* USER CODE BEGIN BusFault_IRQn 0 */
 
-  /* USER CODE END BusFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_BusFault_IRQn 0 */
-    /* USER CODE END W1_BusFault_IRQn 0 */
-  }
+    /* USER CODE END BusFault_IRQn 0 */
+    while (1) {
+        /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+        /* USER CODE END W1_BusFault_IRQn 0 */
+    }
 }
 
 /**
@@ -138,14 +135,13 @@ void BusFault_Handler(void)
   */
 void UsageFault_Handler(void)
 {
-  /* USER CODE BEGIN UsageFault_IRQn 0 */
+    /* USER CODE BEGIN UsageFault_IRQn 0 */
 
-  /* USER CODE END UsageFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
-    /* USER CODE END W1_UsageFault_IRQn 0 */
-  }
+    /* USER CODE END UsageFault_IRQn 0 */
+    while (1) {
+        /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+        /* USER CODE END W1_UsageFault_IRQn 0 */
+    }
 }
 
 /**
@@ -153,12 +149,12 @@ void UsageFault_Handler(void)
   */
 void DebugMon_Handler(void)
 {
-  /* USER CODE BEGIN DebugMonitor_IRQn 0 */
+    /* USER CODE BEGIN DebugMonitor_IRQn 0 */
 
-  /* USER CODE END DebugMonitor_IRQn 0 */
-  /* USER CODE BEGIN DebugMonitor_IRQn 1 */
+    /* USER CODE END DebugMonitor_IRQn 0 */
+    /* USER CODE BEGIN DebugMonitor_IRQn 1 */
 
-  /* USER CODE END DebugMonitor_IRQn 1 */
+    /* USER CODE END DebugMonitor_IRQn 1 */
 }
 
 /******************************************************************************/
@@ -173,13 +169,13 @@ void DebugMon_Handler(void)
   */
 void DMA1_Channel5_IRQHandler(void)
 {
-  /* USER CODE BEGIN DMA1_Channel5_IRQn 0 */
+    /* USER CODE BEGIN DMA1_Channel5_IRQn 0 */
 
-  /* USER CODE END DMA1_Channel5_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_spi2_tx);
-  /* USER CODE BEGIN DMA1_Channel5_IRQn 1 */
+    /* USER CODE END DMA1_Channel5_IRQn 0 */
+    HAL_DMA_IRQHandler(&hdma_spi2_tx);
+    /* USER CODE BEGIN DMA1_Channel5_IRQn 1 */
 
-  /* USER CODE END DMA1_Channel5_IRQn 1 */
+    /* USER CODE END DMA1_Channel5_IRQn 1 */
 }
 
 /**
@@ -187,16 +183,16 @@ void DMA1_Channel5_IRQHandler(void)
   */
 void EXTI9_5_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI9_5_IRQn 0 */
-	if (HAL_GPIO_ReadPin(Wtr_flow_met_GPIO_Port, Wtr_flow_met_Pin)) {
-		wtr_flow_met++;
-	}
+    /* USER CODE BEGIN EXTI9_5_IRQn 0 */
+    if (HAL_GPIO_ReadPin(Wtr_flow_met_GPIO_Port, Wtr_flow_met_Pin)) {
+        wtr_flow_met++;
+    }
 
-  /* USER CODE END EXTI9_5_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(Wtr_flow_met_Pin);
-  /* USER CODE BEGIN EXTI9_5_IRQn 1 */
+    /* USER CODE END EXTI9_5_IRQn 0 */
+    HAL_GPIO_EXTI_IRQHandler(Wtr_flow_met_Pin);
+    /* USER CODE BEGIN EXTI9_5_IRQn 1 */
 
-  /* USER CODE END EXTI9_5_IRQn 1 */
+    /* USER CODE END EXTI9_5_IRQn 1 */
 }
 
 /**
@@ -204,13 +200,13 @@ void EXTI9_5_IRQHandler(void)
   */
 void TIM1_UP_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM1_UP_IRQn 0 */
+    /* USER CODE BEGIN TIM1_UP_IRQn 0 */
 
-  /* USER CODE END TIM1_UP_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim1);
-  /* USER CODE BEGIN TIM1_UP_IRQn 1 */
+    /* USER CODE END TIM1_UP_IRQn 0 */
+    HAL_TIM_IRQHandler(&htim1);
+    /* USER CODE BEGIN TIM1_UP_IRQn 1 */
 
-  /* USER CODE END TIM1_UP_IRQn 1 */
+    /* USER CODE END TIM1_UP_IRQn 1 */
 }
 
 /**
@@ -218,32 +214,32 @@ void TIM1_UP_IRQHandler(void)
   */
 void TIM2_IRQHandler(void)
 {
-	// Check if update interrupt flag is set
-	if (TIM2->SR & TIM_SR_UIF) {
-		// Clear the update interrupt flag
-		TIM2->SR &= ~TIM_SR_UIF;
-		
-		// Handle button presses - debounce sampling
-		b_ER1 = HAL_GPIO_ReadPin(ER11_LINE1_GPIO_Port, ER11_LINE1_Pin);
-		b_ER2 = HAL_GPIO_ReadPin(ER11_LINE2_GPIO_Port, ER11_LINE2_Pin);
-		
-		// Check which button is pressed after debounce delay
-		if (b_ER1 == GPIO_PIN_SET) {
-			// Left button (LINE1) confirmed pressed
-			count_lt++;
-		} else if (b_ER2 == GPIO_PIN_SET) {
-			// Right button (LINE2) confirmed pressed  
-			count_lt--;
-		}
-		
-		// Clear latches
-		b_lt = 0;
-		b_rt = 0;
-		
-		// Stop TIM2 (one-shot mode)
-		TIM2->CR1 &= ~TIM_CR1_CEN;
-		TIM2->DIER &= ~TIM_DIER_UIE;
-	}
+    // Check if update interrupt flag is set
+    if (TIM2->SR & TIM_SR_UIF) {
+        // Clear the update interrupt flag
+        TIM2->SR &= ~TIM_SR_UIF;
+
+        // Handle button presses - debounce sampling
+        b_ER1 = HAL_GPIO_ReadPin(ER11_LINE1_GPIO_Port, ER11_LINE1_Pin);
+        b_ER2 = HAL_GPIO_ReadPin(ER11_LINE2_GPIO_Port, ER11_LINE2_Pin);
+
+        // Check which button is pressed after debounce delay
+        if (b_ER1 == GPIO_PIN_SET) {
+            // Left button (LINE1) confirmed pressed
+            count_lt++;
+        } else if (b_ER2 == GPIO_PIN_SET) {
+            // Right button (LINE2) confirmed pressed
+            count_lt--;
+        }
+
+        // Clear latches
+        b_lt = 0;
+        b_rt = 0;
+
+        // Stop TIM2 (one-shot mode)
+        TIM2->CR1 &= ~TIM_CR1_CEN;
+        TIM2->DIER &= ~TIM_DIER_UIE;
+    }
 }
 
 /**
@@ -251,22 +247,22 @@ void TIM2_IRQHandler(void)
   */
 void TIM4_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM4_IRQn 0 */
-	if (!fl_transmit_485) {
-		modBusData.available = 1;
-		modBusData.buffer = cout_rcvUART;
-		cout_rcvUART = 0;
-	} else {
-		HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
-		fl_transmit_485 = 0;
-	}
+    /* USER CODE BEGIN TIM4_IRQn 0 */
+    if (!fl_transmit_485) {
+        modBusData.available = 1;
+        modBusData.buffer = cout_rcvUART;
+        cout_rcvUART = 0;
+    } else {
+        HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
+        fl_transmit_485 = 0;
+    }
 
-	TIM4->CR1 ^= TIM_CR1_CEN;
-  /* USER CODE END TIM4_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim4);
-  /* USER CODE BEGIN TIM4_IRQn 1 */
+    TIM4->CR1 ^= TIM_CR1_CEN;
+    /* USER CODE END TIM4_IRQn 0 */
+    HAL_TIM_IRQHandler(&htim4);
+    /* USER CODE BEGIN TIM4_IRQn 1 */
 
-  /* USER CODE END TIM4_IRQn 1 */
+    /* USER CODE END TIM4_IRQn 1 */
 }
 
 /**
@@ -274,13 +270,13 @@ void TIM4_IRQHandler(void)
   */
 void I2C1_ER_IRQHandler(void)
 {
-  /* USER CODE BEGIN I2C1_ER_IRQn 0 */
+    /* USER CODE BEGIN I2C1_ER_IRQn 0 */
 
-  /* USER CODE END I2C1_ER_IRQn 0 */
-  HAL_I2C_ER_IRQHandler(&hi2c1);
-  /* USER CODE BEGIN I2C1_ER_IRQn 1 */
+    /* USER CODE END I2C1_ER_IRQn 0 */
+    HAL_I2C_ER_IRQHandler(&hi2c1);
+    /* USER CODE BEGIN I2C1_ER_IRQn 1 */
 
-  /* USER CODE END I2C1_ER_IRQn 1 */
+    /* USER CODE END I2C1_ER_IRQn 1 */
 }
 
 /**
@@ -288,45 +284,43 @@ void I2C1_ER_IRQHandler(void)
   */
 void USART3_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART3_IRQn 0 */
-  //если причина прерывания регистор приема не пуст
-  if((USART3->SR & USART_SR_RXNE)!=0)
-  {
-  	modBusData.frame[cout_rcvUART] = USART3->DR;							//прочитать принятый байт
-  	cout_rcvUART++;
-  	if (cout_rcvUART >= 32) {
-  		cout_rcvUART = 0;
-  	}
-  	fl_transmit_485 = 0;
-  	USART3->SR ^= USART_SR_TC;
-  	TIM4->ARR = modBusData.T1_5;
-  	TIM4->CNT = 0;
-  	TIM4->DIER |= TIM_DIER_UIE;
-  	TIM4->CR1 |= TIM_CR1_CEN;
-  }
-  //если причина прерывания  окончание передачи
-  if((USART3->SR & USART_SR_TC)!=0)
-  {
-//  	if (modBusData.buffer < modBusData.bufferSize) {
-//  		USART3->DR = (uint8_t*)modBusData.frame[modBusData.buffer];
-//  	}
-//  	fl_transmit_485 = 1;
-//  	RCC->APB1ENR	|= RCC_APB1ENR_USART3EN;				// USART3 Clock ON
-//  	USART3->CR1 	|= USART_CR1_UE | USART_CR1_TE | USART_CR1_RE |		// USART1 ON, TX ON, RX ON
-//  			     USART_CR1_RXNEIE;					// RXNE Int ON
-//  	NVIC_EnableIRQ (USART3_IRQn);
-//    USART3->SR ^= USART_SR_TC;         //очистить флаг
-//  	TIM4->ARR = modBusData.T3_5;
-//  	TIM4->CNT = 0;
-//  	TIM4->DIER |= TIM_DIER_UIE;
-//  	TIM4->CR1 |= TIM_CR1_CEN;
-    //.....                               //что-то делаем
-  }
-  /* USER CODE END USART3_IRQn 0 */
-  HAL_UART_IRQHandler(&huart3);
-  /* USER CODE BEGIN USART3_IRQn 1 */
+    /* USER CODE BEGIN USART3_IRQn 0 */
+    //если причина прерывания регистор приема не пуст
+    if ((USART3->SR & USART_SR_RXNE) != 0) {
+        modBusData.frame[cout_rcvUART] = USART3->DR; //прочитать принятый байт
+        cout_rcvUART++;
+        if (cout_rcvUART >= 32) {
+            cout_rcvUART = 0;
+        }
+        fl_transmit_485 = 0;
+        USART3->SR ^= USART_SR_TC;
+        TIM4->ARR = modBusData.T1_5;
+        TIM4->CNT = 0;
+        TIM4->DIER |= TIM_DIER_UIE;
+        TIM4->CR1 |= TIM_CR1_CEN;
+    }
+    //если причина прерывания  окончание передачи
+    if ((USART3->SR & USART_SR_TC) != 0) {
+        //  	if (modBusData.buffer < modBusData.bufferSize) {
+        //  		USART3->DR = (uint8_t*)modBusData.frame[modBusData.buffer];
+        //  	}
+        //  	fl_transmit_485 = 1;
+        //  	RCC->APB1ENR	|= RCC_APB1ENR_USART3EN;				// USART3 Clock ON
+        //  	USART3->CR1 	|= USART_CR1_UE | USART_CR1_TE | USART_CR1_RE |		// USART1 ON, TX ON, RX ON
+        //  			     USART_CR1_RXNEIE;					// RXNE Int ON
+        //  	NVIC_EnableIRQ (USART3_IRQn);
+        //    USART3->SR ^= USART_SR_TC;         //очистить флаг
+        //  	TIM4->ARR = modBusData.T3_5;
+        //  	TIM4->CNT = 0;
+        //  	TIM4->DIER |= TIM_DIER_UIE;
+        //  	TIM4->CR1 |= TIM_CR1_CEN;
+        //.....                               //что-то делаем
+    }
+    /* USER CODE END USART3_IRQn 0 */
+    HAL_UART_IRQHandler(&huart3);
+    /* USER CODE BEGIN USART3_IRQn 1 */
 
-  /* USER CODE END USART3_IRQn 1 */
+    /* USER CODE END USART3_IRQn 1 */
 }
 
 /**
@@ -334,43 +328,43 @@ void USART3_IRQHandler(void)
   */
 void EXTI15_10_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
-  // EXTI12: Enter button
-  if (EXTI->PR & (1<<12)) {
-  	EXTI->PR |= (1<<12); // Clear EXTI12 flag
-  	if (HAL_GPIO_ReadPin(ER11_BUTTON_GPIO_Port, ER11_BUTTON_Pin)) {
-  		enterButton = 1;
-  	}
-  }
-  
-  // EXTI11: LINE2 (Right) button - start debounce timer
-  if (EXTI->PR & (1<<11)) {
-  	EXTI->PR |= (1<<11); // Clear EXTI11 flag
-  	// Only start timer if not already running
-  	if (!(TIM2->CR1 & TIM_CR1_CEN)) {
-  		TIM2->ARR = 2000;  // ~55us debounce at 72MHz
-  		TIM2->CNT = 0;
-  		TIM2->DIER |= TIM_DIER_UIE;
-  		TIM2->CR1 |= TIM_CR1_CEN;
-  	}
-  }
-  
-  // EXTI10: LINE1 (Left) button - start debounce timer
-  if (EXTI->PR & (1<<10)) {
-  	EXTI->PR |= (1<<10); // Clear EXTI10 flag
-  	// Only start timer if not already running
-  	if (!(TIM2->CR1 & TIM_CR1_CEN)) {
-  		TIM2->ARR = 2000;  // ~55us debounce at 72MHz
-  		TIM2->CNT = 0;
-  		TIM2->DIER |= TIM_DIER_UIE;
-  		TIM2->CR1 |= TIM_CR1_CEN;
-  	}
-  }
-  
-  HAL_GPIO_EXTI_IRQHandler(ER11_LINE1_Pin);
-  HAL_GPIO_EXTI_IRQHandler(ER11_LINE2_Pin);
-  HAL_GPIO_EXTI_IRQHandler(ER11_BUTTON_Pin);
-  /* USER CODE END EXTI15_10_IRQn 1 */
+    /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+    // EXTI12: Enter button
+    if (EXTI->PR & (1 << 12)) {
+        EXTI->PR |= (1 << 12); // Clear EXTI12 flag
+        if (HAL_GPIO_ReadPin(ER11_BUTTON_GPIO_Port, ER11_BUTTON_Pin)) {
+            enterButton = 1;
+        }
+    }
+
+    // EXTI11: LINE2 (Right) button - start debounce timer
+    if (EXTI->PR & (1 << 11)) {
+        EXTI->PR |= (1 << 11); // Clear EXTI11 flag
+        // Only start timer if not already running
+        if (!(TIM2->CR1 & TIM_CR1_CEN)) {
+            TIM2->ARR = 2000; // ~55us debounce at 72MHz
+            TIM2->CNT = 0;
+            TIM2->DIER |= TIM_DIER_UIE;
+            TIM2->CR1 |= TIM_CR1_CEN;
+        }
+    }
+
+    // EXTI10: LINE1 (Left) button - start debounce timer
+    if (EXTI->PR & (1 << 10)) {
+        EXTI->PR |= (1 << 10); // Clear EXTI10 flag
+        // Only start timer if not already running
+        if (!(TIM2->CR1 & TIM_CR1_CEN)) {
+            TIM2->ARR = 2000; // ~55us debounce at 72MHz
+            TIM2->CNT = 0;
+            TIM2->DIER |= TIM_DIER_UIE;
+            TIM2->CR1 |= TIM_CR1_CEN;
+        }
+    }
+
+    HAL_GPIO_EXTI_IRQHandler(ER11_LINE1_Pin);
+    HAL_GPIO_EXTI_IRQHandler(ER11_LINE2_Pin);
+    HAL_GPIO_EXTI_IRQHandler(ER11_BUTTON_Pin);
+    /* USER CODE END EXTI15_10_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

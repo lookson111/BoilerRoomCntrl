@@ -1,0 +1,119 @@
+---
+# ClangFormat configuration for BoilerRoomCntrl - STM32 Embedded C Project
+# Based on: K&R style (common for embedded C / Linux kernel)
+
+Language:        Cpp
+
+# File formatting
+BasedOnStyle:    LLVM
+
+# Basic formatting
+IndentWidth:     4
+TabWidth:        4
+UseTab:          Never
+ColumnLimit:     100
+ContinuationIndentWidth: 4
+
+# Brace style (K&R: opening brace on same line for functions, structs, etc.)
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass:      false
+  AfterControlStatement: Never
+  AfterEnum:       false
+  AfterFunction:   true
+  AfterNamespace:  false
+  AfterObjCDeclaration: false
+  AfterStruct:     true
+  AfterUnion:      false
+  AfterExternBlock: false
+  AfterCaseLabel:  false
+  BeforeLambdaBody: false
+  BeforeWhile:     false
+  IndentBraces:    false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
+
+# Pointer and reference alignment
+PointerAlignment: Left
+ReferenceAlignment: Pointer
+DerivePointerAlignment: false
+
+# Spacing
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles:  false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: true
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Line breaking
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: false
+
+# Function declarations
+BinPackArguments: true
+BinPackParameters: true
+IndentWrappedFunctionNames: false
+
+# Includes
+SortIncludes:    true
+IncludeBlocks:   Preserve
+IncludeCategories:
+  - Regex:           '^<.*\.h>'
+    Priority:        1
+  - Regex:           '^<.*>'
+    Priority:        2
+  - Regex:           '.*'
+    Priority:        3
+
+# Namespace
+CompactNamespaces: false
+FixNamespaceComments: true
+
+# Other
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: Yes
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveBitFields: false
+AlignConsecutiveDeclarations: false
+AlignConsecutiveMacros: true
+AlignEscapedNewlines: Right
+AlignOperands:   Align
+AlignTrailingComments: true
+AllowShortEnumsOnASingleLine: true
+
+# C/C++ specific
+Cpp11BracedListStyle: true
+IndentCaseLabels: true
+IndentExternBlock: AfterExternBlock
+IndentPPDirectives: None
+IndentRequires:  false
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 2
+ReflowComments:  false
+SeparateDefinitionBlocks: Leave
+Standard:        Latest
+
+# Macros
+MacroBlockBegin: ''
+MacroBlockEnd:   ''
