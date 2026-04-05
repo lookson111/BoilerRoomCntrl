@@ -80,12 +80,12 @@ Core/
   Startup/              # Vector table & startup code
   ili9341/              # ILI9341 LCD + XPT2046 touch drivers
   modbus/               # SimpleModbusSlave (RTU, functions 3 & 16)
-  my_file/              # Custom application code
-    mylib.h/c           # Utilities, pressure management logic
-    my_sensors.h/c      # Thermistor lookup tables
-    mymenu.h/c          # Menu definitions (Russian, CP1251)
-    my_disp_lib.h/c     # Display menu rendering library
-    mytime.h/c          # DWT timing (delay_us, millis)
+  my_file/              # Custom application code → renamed to `app/`
+    mylib.h/c           # → hal_utils.h/c
+    my_sensors.h/c      # → thermistor_table.h/c
+    mymenu.h/c          # → menu_strings.h/c
+    my_disp_lib.h/c     # → lcd_ui.h/c
+    mytime.h/c          # → dwt_timer.h/c
 Middlewares/FreeRTOS/   # FreeRTOS V10.0.1 + CMSIS-RTOS
 Drivers/                # STM32 HAL + CMSIS
 ```
@@ -135,8 +135,11 @@ sudo apt install gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eab
 ### Build Commands
 
 ```bash
-make          # Build the project
-make clean    # Remove build artifacts
+make                    # Build Debug (default)
+make BUILD_TYPE=Debug   # Build Debug
+make BUILD_TYPE=Release # Build Release
+make clean              # Remove current build artifacts
+make clean_all          # Remove both Debug/ and Release/
 ```
 
 ### Output Files
@@ -166,12 +169,12 @@ The following changes were made to ensure compatibility with modern ARM GCC (13.
 
 ## Known Issues / Notes
 
-1. **No mutex/semaphore for shared data:** Sensor values (`DHT22Temp`, `DHT22Hum`, `travg[]`, `pmavg[]`) are shared between tasks without synchronization — potential race conditions.
-2. **`millis()` returns DWT cycle count, not milliseconds:** Code compensates by multiplying by 72000 (at 72 MHz, 72000 cycles = 1 ms).
+1. ~~**No mutex/semaphore for shared data:**~~ **FIXED** — `sensorDataMutexHandle` protects `DHT22Temp`, `DHT22Hum`, `travg[]`, and `pmavg[]` with `osMutexWait`/`osMutexRelease` in both `sensReadTask` and `dispTask`.
+2. ~~**`millis()` returns DWT cycle count, not milliseconds:**~~ **FIXED** — `millis()` now returns actual milliseconds by dividing DWT cycle count by `SystemCoreClock / 1000`. All callers using the `72000` multiplier have been corrected.
 3. **Two display drivers:** Both `ili9341.c` and `disp_spi.c` (ST7789VW) exist. Active code uses `ili9341.c`.
-4. **Duplicate pin assignment:** `Water_Heat_Home` and `wtr_hm_in` both map to PA5 in `rel_manage[]`.
+4. ~~**Duplicate pin assignment:**~~ **NOT A BUG** — `Water_Heat_Home` is PB9 and `wtr_hm_in` is PA5. They are different pins. The `rel_manage[]` array is correct.
 5. **Touch panel not fully configured:** SPI1 for XPT2046 is referenced but not configured in `.ioc`.
-6. **ITINT/ITFLOAT editing stubs:** The value increment/decrement logic for non-time ITINT items and ITFLOAT items is still a placeholder (empty bodies in the edit loop).
+6. **ITFLOAT editing stub:** The value increment/decrement logic for ITFLOAT items is still a placeholder (empty bodies in the edit loop). ITINT items for time editing are fully implemented.
 
 ## Branches
 

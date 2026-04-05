@@ -188,7 +188,7 @@ void initManagePressHeatingSys(StManagePressHeatingSys *st, GPIO_TypeDef* GPIO_P
 	st->previousPress = 0;
 	st->timePreviousPress = 0;
 	st->minBarPerSecond = 0.05;
-	st->lagMinBerPerSecondError = 72000000; // одна секунда
+	st->lagMinBerPerSecondError = 1000; // one second (in ms)
 	st->maxPressPoint = 2;
 	st->minPressPoint = 1;
 	st->maxVolt = 4.5;
@@ -237,7 +237,7 @@ void measManagePressHeatingSys(StManagePressHeatingSys *st, uint32_t adc_volt, u
 		if ((time < st->timePreviousPress)) {
 			dt = (0xFFFFFFFF - st->timePreviousPress) + time;
 		}
-		st->barPerSecond = (pmavg - st->previousPress) / (dt / 72000000.0);
+		st->barPerSecond = (pmavg - st->previousPress) / (dt / 1000.0);
 		if (st->barPerSecond < st->minBarPerSecond) {
 			if (time > (st->timeOnPomp + st->lagMinBerPerSecondError)) {
 				st->error |= ERROR_PRESS_MET_OUT_OF_BAR_PER_SECOND;

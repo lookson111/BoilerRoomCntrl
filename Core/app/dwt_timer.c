@@ -28,6 +28,6 @@ void delay_us(uint32_t us)
       while (delta(t0, DWT->CYCCNT) < us_count_tic) ;
 }
 
-uint32_t millis() {
-	return DWT->CYCCNT;
+uint32_t millis(void) {
+	return DWT->CYCCNT / (SystemCoreClock / 1000);
 }

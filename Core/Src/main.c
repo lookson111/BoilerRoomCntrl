@@ -78,14 +78,16 @@ osMutexId sensorDataMutexHandle;
 
 StManagePressHeatingSys managePressHeatingSys;
 
-uint8_t channelsADCTr[] = { 1, // Терморезистор 1
-                                                        2, // Терморезистор 2
-                                                        3, // Терморезистор 4
-                                                        4, // Терморезистор 3
-                                                };
-uint8_t channelsADCPm[] = { 8, // Датчик давления 1
-                                                        9  // Датчик давления 2
-                                                    };
+uint8_t channelsADCTr[] = { 
+  1, // Терморезистор 1
+  2, // Терморезистор 2
+  3, // Терморезистор 4
+  4, // Терморезистор 3
+};
+uint8_t channelsADCPm[] = {
+  8, // Датчик давления 1
+  9  // Датчик давления 2
+};
 
 
 
@@ -863,7 +865,7 @@ void StartSensReadTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-      if (((start_time + update_time*72000) < millis()) & tmp_mes) {
+      if (((start_time + update_time) < millis()) & tmp_mes) {
           float temp = readTemperature(DHT22_2_GPIO_Port, DHT22_2_Pin, 0x00);
           osMutexWait(sensorDataMutexHandle, osWaitForever);
           DHT22Temp = temp;
@@ -872,7 +874,7 @@ void StartSensReadTask(void const * argument)
           hum_mes = 1;
           tmp_mes = 0;
       }
-      if (((start_time + update_time*72000) < millis()) & hum_mes) {
+      if (((start_time + update_time) < millis()) & hum_mes) {
           float hum = readHumidity(DHT22_2_GPIO_Port, DHT22_2_Pin);
           osMutexWait(sensorDataMutexHandle, osWaitForever);
           DHT22Hum = hum;
