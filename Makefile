@@ -158,10 +158,12 @@ size: $(TARGET)
 
 # Clean
 clean:
+	find . -name '*.su' -type f -delete
 	rm -rf $(BUILD_DIR)
 
 # Clean all build types
 clean_all:
+	find . -name '*.su' -type f -delete
 	rm -rf Debug Release
 
 # Dependencies
