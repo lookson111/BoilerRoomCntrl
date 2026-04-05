@@ -183,3 +183,4 @@ The following changes were made to ensure compatibility with modern ARM GCC (13.
 - After applying fixes, always run debug and verify the program on the controller does not crash for at least 20 seconds.
 - Always run debug sessions through ./debug.sh instead of manually running openocd/gdb commands. Use ./debug.sh check for stability verification, ./debug.sh interactive for interactive debugging.
 - All git commit messages and comments must be written in English.
+- All builds must be completely free of warnings. Never introduce compiler or linker warnings when making changes. Always verify a clean build (0 warnings, 0 errors) before considering a task complete.
