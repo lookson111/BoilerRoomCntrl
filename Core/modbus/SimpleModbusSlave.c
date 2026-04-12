@@ -5,8 +5,9 @@
 //UART_HandleTypeDef huart3;
 
 
-void modbus_configure(ModBusTypeDef* modBusData, UART_HandleTypeDef* _uart, uint8_t _slaveID,
-                      uint16_t _holdingRegsSize, uint16_t* _regs)
+void modbus_configure(ModBusTypeDef* modBusData, UART_HandleTypeDef* _uart,
+                      uint8_t _slaveID, uint16_t _holdingRegsSize,
+                      uint16_t* _regs)
 {
     modBusData->uart = _uart;
     modbus_update_comms(modBusData, _uart->Init.BaudRate);
@@ -66,29 +67,35 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
                 // сrc контролня сумма пакета
                 uint16_t crc =
                     ((modBusData->frame[modBusData->buffer - 2] << 8) |
-                     modBusData->frame[modBusData->buffer - 1]); // combine the crc Low & High bytes
+                     modBusData->frame[modBusData->buffer -
+                                       1]); // combine the crc Low & High bytes
                 if (calculateCRC(modBusData, modBusData->buffer - 2) ==
                     crc) // if the calculated crc matches the recieved crc continue
                 {
                     modBusData->function = modBusData->frame[1];
                     uint16_t startingAddress =
                         ((modBusData->frame[2] << 8) |
-                         modBusData->frame[3]); // combine the starting address bytes
+                         modBusData
+                             ->frame[3]); // combine the starting address bytes
                     uint16_t no_of_registers =
                         ((modBusData->frame[4] << 8) |
-                         modBusData->frame[5]); // combine the number of register bytes
+                         modBusData->frame
+                             [5]); // combine the number of register bytes
                     uint16_t maxData = startingAddress + no_of_registers;
                     uint8_t index;
                     uint8_t address;
                     uint16_t crc16;
 
                     // broadcasting is not supported for function 3
-                    if (!modBusData->broadcastFlag && (modBusData->function == 3)) {
+                    if (!modBusData->broadcastFlag &&
+                        (modBusData->function == 3)) {
                         if (startingAddress <
-                            modBusData->holdingRegsSize) // check exception 2 ILLEGAL DATA ADDRESS
+                            modBusData
+                                ->holdingRegsSize) // check exception 2 ILLEGAL DATA ADDRESS
                         {
                             if (maxData <=
-                                modBusData->holdingRegsSize) // check exception 3 ILLEGAL DATA VALUE
+                                modBusData
+                                    ->holdingRegsSize) // check exception 3 ILLEGAL DATA VALUE
                             {
                                 uint8_t noOfBytes = no_of_registers * 2;
                                 // ID, function, noOfBytes, (dataLo + dataHi)*number of registers,
@@ -100,25 +107,33 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
                                 address = 3; // PDU starts at the 4th byte
                                 uint16_t temp;
 
-                                for (index = startingAddress; index < maxData; index++) {
+                                for (index = startingAddress; index < maxData;
+                                     index++) {
                                     temp = modBusData->regs[index];
                                     modBusData->frame[address] =
-                                        temp >> 8; // split the register into 2 bytes
+                                        temp >>
+                                        8; // split the register into 2 bytes
                                     address++;
                                     modBusData->frame[address] = temp & 0xFF;
                                     address++;
                                 }
 
-                                crc16 = calculateCRC(modBusData, responseFrameSize - 2);
+                                crc16 = calculateCRC(modBusData,
+                                                     responseFrameSize - 2);
                                 modBusData->frame[responseFrameSize - 2] =
                                     crc16 >> 8;
-                                modBusData->frame[responseFrameSize - 1] = crc16 & 0xFF;
+                                modBusData->frame[responseFrameSize - 1] =
+                                    crc16 & 0xFF;
 
                                 sendPacket(modBusData, responseFrameSize);
                             } else
-                                exceptionResponse(modBusData, 3); // exception 3 ILLEGAL DATA VALUE
+                                exceptionResponse(
+                                    modBusData,
+                                    3); // exception 3 ILLEGAL DATA VALUE
                         } else
-                            exceptionResponse(modBusData, 2); // exception 2 ILLEGAL DATA ADDRESS
+                            exceptionResponse(
+                                modBusData,
+                                2); // exception 2 ILLEGAL DATA ADDRESS
                     } else if (modBusData->function == 16) {
                         // Check if the recieved number of bytes matches the calculated bytes
                         // minus the request bytes.
@@ -133,9 +148,11 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
                                     modBusData
                                         ->holdingRegsSize) // check exception 3 ILLEGAL DATA VALUE
                                 {
-                                    address = 7; // start at the 8th byte in the frame
+                                    address =
+                                        7; // start at the 8th byte in the frame
 
-                                    for (index = startingAddress; index < maxData; index++) {
+                                    for (index = startingAddress;
+                                         index < maxData; index++) {
                                         modBusData->regs[index] =
                                             ((modBusData->frame[address] << 8) |
                                              modBusData->frame[address + 1]);
@@ -144,7 +161,8 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
 
                                     // only the first 6 bytes are used for CRC calculation
                                     crc16 = calculateCRC(modBusData, 6);
-                                    modBusData->frame[6] = crc16 >> 8; // split crc into 2 bytes
+                                    modBusData->frame[6] =
+                                        crc16 >> 8; // split crc into 2 bytes
                                     modBusData->frame[7] = crc16 & 0xFF;
 
                                     // a function 16 response is an echo of the first 6 bytes from
@@ -153,16 +171,19 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
                                              ->broadcastFlag) // don't respond if it's a broadcast message
                                         sendPacket(modBusData, 8);
                                 } else
-                                    exceptionResponse(modBusData,
-                                                      3); // exception 3 ILLEGAL DATA VALUE
+                                    exceptionResponse(
+                                        modBusData,
+                                        3); // exception 3 ILLEGAL DATA VALUE
                             } else
-                                exceptionResponse(modBusData,
-                                                  2); // exception 2 ILLEGAL DATA ADDRESS
+                                exceptionResponse(
+                                    modBusData,
+                                    2); // exception 2 ILLEGAL DATA ADDRESS
                         } else
                             modBusData->errorCount++; // corrupted packet
                     } else
-                        exceptionResponse(modBusData, 1); // exception 1 ILLEGAL FUNCTION
-                } else                                    // checksum failed
+                        exceptionResponse(modBusData,
+                                          1); // exception 1 ILLEGAL FUNCTION
+                } else                        // checksum failed
                     modBusData->errorCount++;
             } // incorrect id
         } else if (modBusData->buffer > 0 && modBusData->buffer < 8)
@@ -179,9 +200,11 @@ void exceptionResponse(ModBusTypeDef* modBusData, uint8_t exception)
     {
         modBusData->frame[0] = modBusData->slaveID;
         modBusData->frame[1] =
-            (modBusData->function | 0x80); // set MSB bit high, informs the master of an exception
+            (modBusData->function |
+             0x80); // set MSB bit high, informs the master of an exception
         modBusData->frame[2] = exception;
-        uint16_t crc16 = calculateCRC(modBusData, 3); // ID, function|0x80, exception code
+        uint16_t crc16 =
+            calculateCRC(modBusData, 3); // ID, function|0x80, exception code
         modBusData->frame[3] = crc16 >> 8;
         modBusData->frame[4] = crc16 & 0xFF;
         // exception response is always 5 bytes
@@ -216,7 +239,8 @@ void sendPacket(ModBusTypeDef* modBusData, uint8_t bufferSize)
 {
     HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_SET);
 
-    HAL_UART_Transmit(modBusData->uart, (uint8_t*)modBusData->frame, bufferSize, 10);
+    HAL_UART_Transmit(modBusData->uart, (uint8_t*)modBusData->frame, bufferSize,
+                      10);
     fl_transmit_485 = 1;
     TIM4->ARR = modBusData->T1_5;
     TIM4->CNT = 0;

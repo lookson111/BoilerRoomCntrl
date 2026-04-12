@@ -177,8 +177,8 @@ void ADC_Avg_add(AdcAverage* adcavg, uint32_t add_var, uint8_t qty)
     }
 }
 
-void initManagePressHeatingSys(StManagePressHeatingSys* st, GPIO_TypeDef* GPIO_Port,
-                               uint16_t GPIO_Pin)
+void initManagePressHeatingSys(StManagePressHeatingSys* st,
+                               GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
 {
     st->GPIO_Port = GPIO_Port;
     st->GPIO_Pin = GPIO_Pin;
@@ -195,7 +195,8 @@ void initManagePressHeatingSys(StManagePressHeatingSys* st, GPIO_TypeDef* GPIO_P
     st->pomp_on = 0;
 }
 
-void workManagePressHeatingSys(StManagePressHeatingSys* st, uint32_t adc_volt, uint32_t time)
+void workManagePressHeatingSys(StManagePressHeatingSys* st, uint32_t adc_volt,
+                               uint32_t time)
 {
     measManagePressHeatingSys(st, adc_volt, time);
     if (st->error) {
@@ -214,7 +215,8 @@ void workManagePressHeatingSys(StManagePressHeatingSys* st, uint32_t adc_volt, u
     }
 }
 
-void measManagePressHeatingSys(StManagePressHeatingSys* st, uint32_t adc_volt, uint32_t time)
+void measManagePressHeatingSys(StManagePressHeatingSys* st, uint32_t adc_volt,
+                               uint32_t time)
 {
     float Rt = adc_volt;
     float Ut;

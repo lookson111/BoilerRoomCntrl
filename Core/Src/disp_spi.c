@@ -183,29 +183,33 @@ void ST7789VW_WriteData(uint8_t* buff, size_t buff_size)
 }
 
 //-функцию заливки прямоугольника
-static void ST7789VW_SetAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+static void ST7789VW_SetAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1,
+                                   uint16_t y1)
 {
     // column address set
     ST7789VW_SendCommand(0x2A); // CASET
     {
-        uint8_t data[] = {(x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF};
+        uint8_t data[] = {(x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF,
+                          x1 & 0xFF};
         ST7789VW_WriteData(data, sizeof(data));
     }
 
     // row address set
     ST7789VW_SendCommand(0x2B); // RASET
     {
-        uint8_t data[] = {(y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF};
+        uint8_t data[] = {(y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF,
+                          y1 & 0xFF};
         ST7789VW_WriteData(data, sizeof(data));
     }
 
     // write to RAM
     ST7789VW_SendCommand(0x2C); // RAMWR
 }
-void ST7789VW_FillRect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color)
+void ST7789VW_FillRect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
+                       uint16_t color)
 {
-    if ((x1 >= ST7789VW_WIDTH) || (y1 >= ST7789VW_HEIGHT) || (x2 >= ST7789VW_WIDTH) ||
-        (y2 >= ST7789VW_HEIGHT))
+    if ((x1 >= ST7789VW_WIDTH) || (y1 >= ST7789VW_HEIGHT) ||
+        (x2 >= ST7789VW_WIDTH) || (y2 >= ST7789VW_HEIGHT))
         return;
     if (x1 > x2)
         swap(x1, x2);

@@ -73,10 +73,12 @@ uint32_t ADC_Result(ADC_HandleTypeDef* hadc, uint32_t ch);
 void inttochar(char* tmpl, uint32_t intdata);
 void ADC_Avg_add(AdcAverage* adcavg, uint32_t add_var, uint8_t qty);
 
-void initManagePressHeatingSys(StManagePressHeatingSys* st, GPIO_TypeDef* GPIO_Port,
-                               uint16_t GPIO_Pin);
-void workManagePressHeatingSys(StManagePressHeatingSys* st, uint32_t adc_volt, uint32_t time);
-void measManagePressHeatingSys(StManagePressHeatingSys* st, uint32_t adc_volt, uint32_t time);
+void initManagePressHeatingSys(StManagePressHeatingSys* st,
+                               GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin);
+void workManagePressHeatingSys(StManagePressHeatingSys* st, uint32_t adc_volt,
+                               uint32_t time);
+void measManagePressHeatingSys(StManagePressHeatingSys* st, uint32_t adc_volt,
+                               uint32_t time);
 
 
 #endif /* INC_HAL_UTILS_H_ */

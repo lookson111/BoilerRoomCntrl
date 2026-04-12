@@ -23,13 +23,13 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "../ili9341/fonts.h"
-#include "../ili9341/ili9341.h"
-#include "DHT.h"
 #include <string.h>
 #include "../app/hal_utils.h"
 #include "../app/lcd_ui.h"
 #include "../app/thermistor_table.h"
+#include "../ili9341/fonts.h"
+#include "../ili9341/ili9341.h"
+#include "DHT.h"
 #include "stdint.h"
 
 /* USER CODE END Includes */
@@ -278,7 +278,8 @@ void SystemClock_Config(void)
     /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
+    RCC_OscInitStruct.OscillatorType =
+        RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
     RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
     RCC_OscInitStruct.LSEState = RCC_LSE_ON;
@@ -292,8 +293,8 @@ void SystemClock_Config(void)
 
     /** Initializes the CPU, AHB and APB buses clocks
   */
-    RCC_ClkInitStruct.ClockType =
-        RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK |
+                                  RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
@@ -501,7 +502,8 @@ static void MX_TIM2_Init(void)
     }
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK) {
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) !=
+        HAL_OK) {
         Error_Handler();
     }
     /* USER CODE BEGIN TIM2_Init 2 */
@@ -537,14 +539,16 @@ static void MX_TIM3_Init(void)
     }
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK) {
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) !=
+        HAL_OK) {
         Error_Handler();
     }
     sConfigOC.OCMode = TIM_OCMODE_PWM1;
     sConfigOC.Pulse = 0;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) {
+    if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) !=
+        HAL_OK) {
         Error_Handler();
     }
     /* USER CODE BEGIN TIM3_Init 2 */
@@ -585,7 +589,8 @@ static void MX_TIM4_Init(void)
     }
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK) {
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) !=
+        HAL_OK) {
         Error_Handler();
     }
     /* USER CODE BEGIN TIM4_Init 2 */
@@ -659,13 +664,16 @@ static void MX_GPIO_Init(void)
     HAL_GPIO_WritePin(DHT22_2_GPIO_Port, DHT22_2_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOA, DHT22_1_Pin | wtr_hm_in_Pin | DISP_RES_Pin | DISP_BLK_Pin | WtoHS_Pin,
+    HAL_GPIO_WritePin(GPIOA,
+                      DHT22_1_Pin | wtr_hm_in_Pin | DISP_RES_Pin |
+                          DISP_BLK_Pin | WtoHS_Pin,
                       GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(GPIOB,
-                      RS485_RE_Pin | DISP_CS_Pin | DISP_DC_Pin | CPW_HEAT_HOME_Pin |
-                          WATER_VALVE_Pin | CP_HOT_WATER_Pin | Water_Heat_Home_Pin,
+                      RS485_RE_Pin | DISP_CS_Pin | DISP_DC_Pin |
+                          CPW_HEAT_HOME_Pin | WATER_VALVE_Pin |
+                          CP_HOT_WATER_Pin | Water_Heat_Home_Pin,
                       GPIO_PIN_RESET);
 
     /*Configure GPIO pin : DHT22_2_Pin */
@@ -683,7 +691,8 @@ static void MX_GPIO_Init(void)
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     /*Configure GPIO pins : Wtr_flow_met_Pin ER11_LINE1_Pin ER11_LINE2_Pin ER11_BUTTON_Pin */
-    GPIO_InitStruct.Pin = Wtr_flow_met_Pin | ER11_LINE1_Pin | ER11_LINE2_Pin | ER11_BUTTON_Pin;
+    GPIO_InitStruct.Pin =
+        Wtr_flow_met_Pin | ER11_LINE1_Pin | ER11_LINE2_Pin | ER11_BUTTON_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -717,7 +726,8 @@ static void MX_GPIO_Init(void)
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     /*Configure GPIO pins : CPW_HEAT_HOME_Pin CP_HOT_WATER_Pin Water_Heat_Home_Pin */
-    GPIO_InitStruct.Pin = CPW_HEAT_HOME_Pin | CP_HOT_WATER_Pin | Water_Heat_Home_Pin;
+    GPIO_InitStruct.Pin =
+        CPW_HEAT_HOME_Pin | CP_HOT_WATER_Pin | Water_Heat_Home_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -758,22 +768,24 @@ void StartDefaultTask(void const* argument)
     HAL_StatusTypeDef status;
 
     HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
-    modbus_configure(&modBusData, &huart3, slaveID, HOLDING_REGS_SIZE_BR, holdingRegs);
-    RCC->APB1ENR |= RCC_APB1ENR_USART3EN;                       // USART3 Clock ON
-    USART3->CR1 |= USART_CR1_UE | USART_CR1_TE | USART_CR1_RE | // USART1 ON, TX ON, RX ON
-                   USART_CR1_RXNEIE;                            // RXNE Int ON
+    modbus_configure(&modBusData, &huart3, slaveID, HOLDING_REGS_SIZE_BR,
+                     holdingRegs);
+    RCC->APB1ENR |= RCC_APB1ENR_USART3EN; // USART3 Clock ON
+    USART3->CR1 |= USART_CR1_UE | USART_CR1_TE |
+                   USART_CR1_RE |    // USART1 ON, TX ON, RX ON
+                   USART_CR1_RXNEIE; // RXNE Int ON
     NVIC_EnableIRQ(USART3_IRQn);
 
-    HAL_I2C_Mem_Write(&hi2c1, devAddr, memAddr, I2C_MEMADD_SIZE_16BIT, (uint8_t*)wmsg, sizeof(wmsg),
-                      HAL_MAX_DELAY);
+    HAL_I2C_Mem_Write(&hi2c1, devAddr, memAddr, I2C_MEMADD_SIZE_16BIT,
+                      (uint8_t*)wmsg, sizeof(wmsg), HAL_MAX_DELAY);
     for (;;) {
         status = HAL_I2C_IsDeviceReady(&hi2c1, devAddr, 1, HAL_MAX_DELAY);
         if (status == HAL_OK) {
             // !!!Чтобы заработало необходимо в stm32f1xx_hal_msp.c ///
             //    перенести __HAL_RCC_I2C1_CLK_ENABLE(); до                 ///
             //    __HAL_RCC_GPIOB_CLK_ENABLE();                                            ///
-            HAL_I2C_Mem_Read(&hi2c1, devAddr, memAddr, I2C_MEMADD_SIZE_16BIT, (uint8_t*)rmsg,
-                             sizeof(wmsg), 100);
+            HAL_I2C_Mem_Read(&hi2c1, devAddr, memAddr, I2C_MEMADD_SIZE_16BIT,
+                             (uint8_t*)rmsg, sizeof(wmsg), 100);
         }
     }
     /* USER CODE END 5 */
@@ -853,7 +865,8 @@ void StartSensReadTask(void const* argument)
             osMutexRelease(sensorDataMutexHandle);
         }
 
-        workManagePressHeatingSys(&managePressHeatingSys, pmavgadc[en_pm1], millis());
+        workManagePressHeatingSys(&managePressHeatingSys, pmavgadc[en_pm1],
+                                  millis());
 
         osDelay(1);
     }
@@ -927,7 +940,8 @@ void StartDispTask(void const* argument)
         fltochar(&strMenuValsData[menuTRez_2][0], loc_tr2);
         fltochar(&strMenuValsData[menuTRez_3][0], loc_tr3);
         fltochar(&strMenuValsData[menuTRez_4][0], loc_tr4);
-        fltochar(&strMenuValsData[menuPres_1][0], managePressHeatingSys.previousPress);
+        fltochar(&strMenuValsData[menuPres_1][0],
+                 managePressHeatingSys.previousPress);
         fltochar(&strMenuValsData[menuPres_2][0], loc_pm2);
         inttochar(&strMenuValsData[menuWtrCounter][0], wtr_flow_met);
         inttochar(&strMenuValsData[menuPWMTermRez][0], dm.pwm_tmp);

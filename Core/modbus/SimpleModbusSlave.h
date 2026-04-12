@@ -76,8 +76,9 @@ typedef struct
 
 // function definitions
 
-void modbus_configure(ModBusTypeDef* modBusData, UART_HandleTypeDef* _uart, uint8_t _slaveID,
-                      uint16_t _holdingRegsSize, uint16_t* _regs);
+void modbus_configure(ModBusTypeDef* modBusData, UART_HandleTypeDef* _uart,
+                      uint8_t _slaveID, uint16_t _holdingRegsSize,
+                      uint16_t* _regs);
 void modbus_update_comms(ModBusTypeDef* modBusData, uint32_t baud);
 uint16_t modbus_update(ModBusTypeDef* modBusData);
 // function definitions

@@ -46,8 +46,8 @@ typedef struct
 
 extern stDispMenu dm;
 void disp_init(stDispMenu* dm);
-void disp_time_view(stDispMenu* dm, RTC_HandleTypeDef* hrtc, RTC_TimeTypeDef* sTime,
-                    RTC_DateTypeDef* sDate);
+void disp_time_view(stDispMenu* dm, RTC_HandleTypeDef* hrtc,
+                    RTC_TimeTypeDef* sTime, RTC_DateTypeDef* sDate);
 short disp_out_lines(stDispMenu* dm, FontDef font);
 short disp_curs_view(stDispMenu* dm, FontDef font);
 void disp_poweron(stDispMenu* dm);

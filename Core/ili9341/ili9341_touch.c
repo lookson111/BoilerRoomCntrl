@@ -8,17 +8,20 @@
 
 static void ILI9341_TouchSelect()
 {
-    HAL_GPIO_WritePin(ILI9341_TOUCH_CS_GPIO_Port, ILI9341_TOUCH_CS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ILI9341_TOUCH_CS_GPIO_Port, ILI9341_TOUCH_CS_Pin,
+                      GPIO_PIN_RESET);
 }
 
 void ILI9341_TouchUnselect()
 {
-    HAL_GPIO_WritePin(ILI9341_TOUCH_CS_GPIO_Port, ILI9341_TOUCH_CS_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ILI9341_TOUCH_CS_GPIO_Port, ILI9341_TOUCH_CS_Pin,
+                      GPIO_PIN_SET);
 }
 
 bool ILI9341_TouchPressed()
 {
-    return HAL_GPIO_ReadPin(ILI9341_TOUCH_IRQ_GPIO_Port, ILI9341_TOUCH_IRQ_Pin) == GPIO_PIN_RESET;
+    return HAL_GPIO_ReadPin(ILI9341_TOUCH_IRQ_GPIO_Port,
+                            ILI9341_TOUCH_IRQ_Pin) == GPIO_PIN_RESET;
 }
 
 bool ILI9341_TouchGetCoordinates(uint16_t* x, uint16_t* y)
@@ -38,17 +41,17 @@ bool ILI9341_TouchGetCoordinates(uint16_t* x, uint16_t* y)
 
         nsamples++;
 
-        HAL_SPI_Transmit(&ILI9341_TOUCH_SPI_PORT, (uint8_t*)cmd_read_y, sizeof(cmd_read_y),
-                         HAL_MAX_DELAY);
+        HAL_SPI_Transmit(&ILI9341_TOUCH_SPI_PORT, (uint8_t*)cmd_read_y,
+                         sizeof(cmd_read_y), HAL_MAX_DELAY);
         uint8_t y_raw[2];
-        HAL_SPI_TransmitReceive(&ILI9341_TOUCH_SPI_PORT, (uint8_t*)zeroes_tx, y_raw, sizeof(y_raw),
-                                HAL_MAX_DELAY);
+        HAL_SPI_TransmitReceive(&ILI9341_TOUCH_SPI_PORT, (uint8_t*)zeroes_tx,
+                                y_raw, sizeof(y_raw), HAL_MAX_DELAY);
 
-        HAL_SPI_Transmit(&ILI9341_TOUCH_SPI_PORT, (uint8_t*)cmd_read_x, sizeof(cmd_read_x),
-                         HAL_MAX_DELAY);
+        HAL_SPI_Transmit(&ILI9341_TOUCH_SPI_PORT, (uint8_t*)cmd_read_x,
+                         sizeof(cmd_read_x), HAL_MAX_DELAY);
         uint8_t x_raw[2];
-        HAL_SPI_TransmitReceive(&ILI9341_TOUCH_SPI_PORT, (uint8_t*)zeroes_tx, x_raw, sizeof(x_raw),
-                                HAL_MAX_DELAY);
+        HAL_SPI_TransmitReceive(&ILI9341_TOUCH_SPI_PORT, (uint8_t*)zeroes_tx,
+                                x_raw, sizeof(x_raw), HAL_MAX_DELAY);
 
         avg_x += (((uint16_t)x_raw[0]) << 8) | ((uint16_t)x_raw[1]);
         avg_y += (((uint16_t)y_raw[0]) << 8) | ((uint16_t)y_raw[1]);

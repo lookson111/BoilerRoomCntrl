@@ -146,7 +146,8 @@ void Error_Handler(void);
 #define Water_Heat_Home_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-#define ER11_ON 0x1F // состояние байта при котором будем считать что триггер кнопки сработал
+#define ER11_ON                                                                \
+    0x1F // состояние байта при котором будем считать что триггер кнопки сработал
 
 #define ER11_ND 0x00
 #define ER11_L1 0x01

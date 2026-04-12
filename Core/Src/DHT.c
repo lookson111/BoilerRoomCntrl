@@ -172,7 +172,8 @@ char read(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
   */
 
     // check we read 40 bits and that the checksum matches
-    if ((j >= 40) && (data[4] == ((data[0] + data[1] + data[2] + data[3]) & 0xFF))) {
+    if ((j >= 40) &&
+        (data[4] == ((data[0] + data[1] + data[2] + data[3]) & 0xFF))) {
         return TRUE;
     }
 

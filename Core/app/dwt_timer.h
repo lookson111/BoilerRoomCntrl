@@ -8,9 +8,9 @@
 #ifndef INC_DWT_TIMER_H_
 #define INC_DWT_TIMER_H_
 
-#include "main.h"
 #include "FreeRTOS.h"
 #include "cmsis_os.h"
+#include "main.h"
 #include "task.h"
 
 #define DWT_CYCCNT  *(volatile unsigned long*)0xE0001004

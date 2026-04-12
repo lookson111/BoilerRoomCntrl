@@ -14,12 +14,18 @@
 
 extern SPI_HandleTypeDef hspi2;
 //-------------------------------------------------------------------
-#define RESET_ACTIVE() HAL_GPIO_WritePin(DISP_RES_GPIO_Port, DISP_RES_Pin, GPIO_PIN_RESET)
-#define RESET_IDLE()   HAL_GPIO_WritePin(DISP_RES_GPIO_Port, DISP_RES_Pin, GPIO_PIN_SET)
-#define CS_ACTIVE()    HAL_GPIO_WritePin(DISP_CS_GPIO_Port, DISP_CS_Pin, GPIO_PIN_RESET)
-#define CS_IDLE()      HAL_GPIO_WritePin(DISP_CS_GPIO_Port, DISP_CS_Pin, GPIO_PIN_SET)
-#define DC_COMMAND()   HAL_GPIO_WritePin(DISP_DC_GPIO_Port, DISP_DC_Pin, GPIO_PIN_RESET)
-#define DC_DATA()      HAL_GPIO_WritePin(DISP_DC_GPIO_Port, DISP_DC_Pin, GPIO_PIN_SET)
+#define RESET_ACTIVE()                                                         \
+    HAL_GPIO_WritePin(DISP_RES_GPIO_Port, DISP_RES_Pin, GPIO_PIN_RESET)
+#define RESET_IDLE()                                                           \
+    HAL_GPIO_WritePin(DISP_RES_GPIO_Port, DISP_RES_Pin, GPIO_PIN_SET)
+#define CS_ACTIVE()                                                            \
+    HAL_GPIO_WritePin(DISP_CS_GPIO_Port, DISP_CS_Pin, GPIO_PIN_RESET)
+#define CS_IDLE()                                                              \
+    HAL_GPIO_WritePin(DISP_CS_GPIO_Port, DISP_CS_Pin, GPIO_PIN_SET)
+#define DC_COMMAND()                                                           \
+    HAL_GPIO_WritePin(DISP_DC_GPIO_Port, DISP_DC_Pin, GPIO_PIN_RESET)
+#define DC_DATA()                                                              \
+    HAL_GPIO_WritePin(DISP_DC_GPIO_Port, DISP_DC_Pin, GPIO_PIN_SET)
 //-------------------------------------------------------------------
 #define ST7789VW_MADCTL_MY  0x80
 #define ST7789VW_MADCTL_MX  0x40
@@ -38,11 +44,11 @@ extern SPI_HandleTypeDef hspi2;
 #define ST7789VW_YELLOW     0xFFE0
 #define ST7789VW_WHITE      0xFFFF
 //-------------------------------------------------------------------
-#define swap(a, b)                                                                                 \
-    {                                                                                              \
-        int16_t t = a;                                                                             \
-        a = b;                                                                                     \
-        b = t;                                                                                     \
+#define swap(a, b)                                                             \
+    {                                                                          \
+        int16_t t = a;                                                         \
+        a = b;                                                                 \
+        b = t;                                                                 \
     }
 //-------------------------------------------------------------------
 
@@ -51,7 +57,8 @@ void ST7789VW_reset(void);
 void ST7789VW_SendCommand(uint8_t cmd);
 void ST7789VW_SendData(uint8_t dt);
 void ST7789VW_WriteData(uint8_t* buff, size_t buff_size);
-void ST7789VW_FillRect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
+void ST7789VW_FillRect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
+                       uint16_t color);
 void ST7789VW_FillScreen(uint16_t color);
 
 #endif /* INC_DISP_SPI_H_ */

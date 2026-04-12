@@ -48,8 +48,8 @@ void disp_init(stDispMenu* dm)
     ILI9341_FillScreen(ILI9341_WHITE);
 }
 
-void disp_time_view(stDispMenu* dm, RTC_HandleTypeDef* hrtc, RTC_TimeTypeDef* sTime,
-                    RTC_DateTypeDef* sDate)
+void disp_time_view(stDispMenu* dm, RTC_HandleTypeDef* hrtc,
+                    RTC_TimeTypeDef* sTime, RTC_DateTypeDef* sDate)
 {
     char time[9];
     // обновление времени
@@ -64,7 +64,8 @@ void disp_time_view(stDispMenu* dm, RTC_HandleTypeDef* hrtc, RTC_TimeTypeDef* sT
     time[6] = '0' + (sTime->Seconds / 10);
     time[7] = '0' + (sTime->Seconds % 10);
     time[8] = 0x00;
-    ILI9341_WriteString(12 * 19, (240 - 15), time, Font_12x15, ILI9341_BLACK, ILI9341_WHITE);
+    ILI9341_WriteString(12 * 19, (240 - 15), time, Font_12x15, ILI9341_BLACK,
+                        ILI9341_WHITE);
     // конец обновления времени
 }
 
@@ -74,15 +75,15 @@ short disp_curs_view(stDispMenu* dm, FontDef font)
         return 0;
     if (dm->count == 0) {
         if (dm->menu_data) {
-            ILI9341_WriteString(0, font.height * dm->count, &disp_znak[2], font, ILI9341_WHITE,
-                                ILI9341_BLACK);
+            ILI9341_WriteString(0, font.height * dm->count, &disp_znak[2], font,
+                                ILI9341_WHITE, ILI9341_BLACK);
         } else {
-            ILI9341_WriteString(160, font.height * dm->count, &disp_znak[2], font, ILI9341_WHITE,
-                                ILI9341_BLACK);
+            ILI9341_WriteString(160, font.height * dm->count, &disp_znak[2],
+                                font, ILI9341_WHITE, ILI9341_BLACK);
         }
     } else {
-        ILI9341_WriteString(0, font.height * dm->count, &disp_znak[2], font, ILI9341_BLACK,
-                            ILI9341_WHITE);
+        ILI9341_WriteString(0, font.height * dm->count, &disp_znak[2], font,
+                            ILI9341_BLACK, ILI9341_WHITE);
     }
     // счетик изменеия положения курсора
     if (count_lt > 0) {
@@ -135,15 +136,15 @@ short disp_curs_view(stDispMenu* dm, FontDef font)
     }
     if (dm->count == 0) {
         if (dm->menu_data) {
-            ILI9341_WriteString(0, font.height * dm->count, &disp_znak[0], font, ILI9341_WHITE,
-                                ILI9341_BLACK);
+            ILI9341_WriteString(0, font.height * dm->count, &disp_znak[0], font,
+                                ILI9341_WHITE, ILI9341_BLACK);
         } else {
-            ILI9341_WriteString(160, font.height * dm->count, &disp_znak[0], font, ILI9341_WHITE,
-                                ILI9341_BLACK);
+            ILI9341_WriteString(160, font.height * dm->count, &disp_znak[0],
+                                font, ILI9341_WHITE, ILI9341_BLACK);
         }
     } else {
-        ILI9341_WriteString(0, font.height * dm->count, &disp_znak[0], font, ILI9341_BLACK,
-                            ILI9341_WHITE);
+        ILI9341_WriteString(0, font.height * dm->count, &disp_znak[0], font,
+                            ILI9341_BLACK, ILI9341_WHITE);
     }
     return 0;
 }
@@ -167,20 +168,24 @@ short disp_out_lines(stDispMenu* dm, FontDef font)
         // Рисуем заголовки
         ILI9341_FillRectangle(0, 0, 160, font.height, dm->clrRectLeft);
         ILI9341_FillRectangle(160, 0, 160, font.height, dm->clrRectRight);
-        ILI9341_WriteString(12, 0, &str_title[0][0], font, dm->clrWordsLf, dm->clrRectLeft);
-        ILI9341_WriteString(12 + 160, 0, &str_title[1][0], font, dm->clrWordsRt, dm->clrRectRight);
+        ILI9341_WriteString(12, 0, &str_title[0][0], font, dm->clrWordsLf,
+                            dm->clrRectLeft);
+        ILI9341_WriteString(12 + 160, 0, &str_title[1][0], font, dm->clrWordsRt,
+                            dm->clrRectRight);
         // отображаем пункты меню
         for (uint16_t i = dm->diap_min; i < dm->diap_max; i++) {
             if (dm->menu_data)
                 menu = &strMenuNameData[i][0];
             else
                 menu = &strMenuNamePoint[i][0];
-            ILI9341_WriteString(12, font.height * (i - dm->diap_min + title_line), menu, font,
-                                ILI9341_BLACK, ILI9341_WHITE);
+            ILI9341_WriteString(12,
+                                font.height * (i - dm->diap_min + title_line),
+                                menu, font, ILI9341_BLACK, ILI9341_WHITE);
         }
         for (uint16_t i = dm->diap_max; i < lines_max; i++) {
-            ILI9341_WriteString(12, font.height * (i - dm->diap_min + title_line), strClearName,
-                                font, ILI9341_BLACK, ILI9341_WHITE);
+            ILI9341_WriteString(
+                12, font.height * (i - dm->diap_min + title_line), strClearName,
+                font, ILI9341_BLACK, ILI9341_WHITE);
         }
 
         dm->redrawDispMenu = 0;
@@ -191,12 +196,14 @@ short disp_out_lines(stDispMenu* dm, FontDef font)
             menu = &strMenuValsData[i][0];
         else
             menu = &strMenuValsPoint[i][0];
-        ILI9341_WriteString(12 * 18, font.height * (i - dm->diap_min + title_line), menu, font,
-                            ILI9341_BLACK, ILI9341_WHITE);
+        ILI9341_WriteString(12 * 18,
+                            font.height * (i - dm->diap_min + title_line), menu,
+                            font, ILI9341_BLACK, ILI9341_WHITE);
     }
     for (uint16_t i = dm->diap_max; i < lines_max; i++) {
-        ILI9341_WriteString(12 * 18, font.height * (i - dm->diap_min + title_line), str_clear, font,
-                            ILI9341_BLACK, ILI9341_WHITE);
+        ILI9341_WriteString(12 * 18,
+                            font.height * (i - dm->diap_min + title_line),
+                            str_clear, font, ILI9341_BLACK, ILI9341_WHITE);
     }
     // Конец записи данных в дисплей
     return 0;
@@ -234,8 +241,10 @@ void disp_poweron(stDispMenu* dm)
     if (dm->pwr_on) {
         for (int i = 0; i < 6; i++) {
             rel_manage[i].fl_on_off = GPIO_PIN_RESET;
-            memcpy(&strMenuValsPoint[rel_manage[i].line][0], str_off, CNTVSYMINSTR);
-            HAL_GPIO_WritePin(rel_manage[i].gpio_port, rel_manage[i].pin, rel_manage[i].fl_on_off);
+            memcpy(&strMenuValsPoint[rel_manage[i].line][0], str_off,
+                   CNTVSYMINSTR);
+            HAL_GPIO_WritePin(rel_manage[i].gpio_port, rel_manage[i].pin,
+                              rel_manage[i].fl_on_off);
         }
         dm->pwr_on = 0;
     }
@@ -269,8 +278,10 @@ void disp_button_press(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
                         if (dm->line == rel_manage[i].line) {
                             rel_manage[i].fl_on_off = ~rel_manage[i].fl_on_off;
                             memcpy(&strMenuValsPoint[rel_manage[i].line][0],
-                                   rel_manage[i].fl_on_off ? str_on : str_off, CNTVSYMINSTR);
-                            HAL_GPIO_WritePin(rel_manage[i].gpio_port, rel_manage[i].pin,
+                                   rel_manage[i].fl_on_off ? str_on : str_off,
+                                   CNTVSYMINSTR);
+                            HAL_GPIO_WritePin(rel_manage[i].gpio_port,
+                                              rel_manage[i].pin,
                                               rel_manage[i].fl_on_off);
                         }
                     }
@@ -305,11 +316,14 @@ void disp_button_press(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
                         if (count_lt > 0) {
                             // Increment value based on current menu item
                             if (dm->line == menuTimeHour) {
-                                dm->time_tmp_hour = (dm->time_tmp_hour + 1) % 24;
+                                dm->time_tmp_hour =
+                                    (dm->time_tmp_hour + 1) % 24;
                             } else if (dm->line == menuTimeMinute) {
-                                dm->time_tmp_minute = (dm->time_tmp_minute + 1) % 60;
+                                dm->time_tmp_minute =
+                                    (dm->time_tmp_minute + 1) % 60;
                             } else if (dm->line == menuTimeSecond) {
-                                dm->time_tmp_second = (dm->time_tmp_second + 1) % 60;
+                                dm->time_tmp_second =
+                                    (dm->time_tmp_second + 1) % 60;
                             } else if (dm->line == menuTimeDay) {
                                 if (dm->time_tmp_day < 31)
                                     dm->time_tmp_day++;
