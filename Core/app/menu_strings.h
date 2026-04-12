@@ -57,7 +57,6 @@ enum {
     menuTimeSecond, // Секунды
     menuTimeDay,    // День
     menuTimeMonth,  // Месяц
-    menuTimeYear,   // Год
     menuPCountElements
 };
 

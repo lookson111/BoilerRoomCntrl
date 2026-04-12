@@ -967,7 +967,6 @@ void StartDispTask(void const* argument)
             inttochar(&strMenuValsPoint[menuTimeSecond][0], dm.time_tmp_second);
             inttochar(&strMenuValsPoint[menuTimeDay][0], dm.time_tmp_day);
             inttochar(&strMenuValsPoint[menuTimeMonth][0], dm.time_tmp_month);
-            inttochar(&strMenuValsPoint[menuTimeYear][0], dm.time_tmp_year);
         }
         // КОНЕЦ Переносим данные в строки
 

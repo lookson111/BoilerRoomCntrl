@@ -29,7 +29,9 @@ void disp_init(stDispMenu* dm)
     dm->redrawDispMenu = 1;
     dm->menuCountEl = menuCountElements;
     dm->diap_min = 0;
-    dm->diap_max = dm->menuCountEl;
+    dm->diap_max = lines_max;
+    if (dm->diap_max > dm->menuCountEl)
+        dm->diap_max = dm->menuCountEl;
     dm->menu_data = 1;
     dm->pwr_on = 1;
     dm->b_enter_line = 0;
@@ -41,7 +43,6 @@ void disp_init(stDispMenu* dm)
     dm->time_tmp_second = 0;
     dm->time_tmp_day = 1;
     dm->time_tmp_month = 1;
-    dm->time_tmp_year = 25;
 
     ILI9341_Init();
     ILI9341_SetRotation(1);
@@ -64,6 +65,8 @@ void disp_time_view(stDispMenu* dm, RTC_HandleTypeDef* hrtc,
     time[6] = '0' + (sTime->Seconds / 10);
     time[7] = '0' + (sTime->Seconds % 10);
     time[8] = 0x00;
+    // Clear time row first to prevent garbage
+    ILI9341_FillRectangle(0, 240 - 15, 320, 15, ILI9341_WHITE);
     ILI9341_WriteString(12 * 19, (240 - 15), time, Font_12x15, ILI9341_BLACK,
                         ILI9341_WHITE);
     // конец обновления времени
@@ -96,8 +99,8 @@ short disp_curs_view(stDispMenu* dm, FontDef font)
         count_lt = 0;
     }
     // логика работы курсора
-    if (dm->count > dm->menuCountEl) {
-        if (dm->diap_max >= dm->menuCountEl) {
+    if (dm->count > lines_max) {
+        if (dm->diap_min + lines_max >= dm->menuCountEl) {
             // если мы превысили счетчиком максимальное количество элеметнов
             // то переводим курсор на 1 элемент
             dm->diap_min = 0;
@@ -109,7 +112,9 @@ short disp_curs_view(stDispMenu* dm, FontDef font)
             dm->diap_min += 1;
             dm->line += 1;
         }
-        dm->diap_max = dm->diap_min + dm->menuCountEl; //lines_max;
+        dm->diap_max = dm->diap_min + lines_max;
+        if (dm->diap_max > dm->menuCountEl)
+            dm->diap_max = dm->menuCountEl;
         dm->redrawDispMenu = 1;
     } else if (dm->count <= 0) {
         if (dm->diap_min <= 0) { // ==0
@@ -130,7 +135,9 @@ short disp_curs_view(stDispMenu* dm, FontDef font)
             dm->diap_min -= 1;
             dm->line -= 1;
             dm->count = title_line;
-            dm->diap_max = dm->diap_min + dm->menuCountEl;
+            dm->diap_max = dm->diap_min + lines_max;
+            if (dm->diap_max > dm->menuCountEl)
+                dm->diap_max = dm->menuCountEl;
             dm->redrawDispMenu = 1;
         }
     }
@@ -182,10 +189,11 @@ short disp_out_lines(stDispMenu* dm, FontDef font)
                                 font.height * (i - dm->diap_min + title_line),
                                 menu, font, ILI9341_BLACK, ILI9341_WHITE);
         }
-        for (uint16_t i = dm->diap_max; i < lines_max; i++) {
-            ILI9341_WriteString(
-                12, font.height * (i - dm->diap_min + title_line), strClearName,
-                font, ILI9341_BLACK, ILI9341_WHITE);
+        // очищаем неиспользованные строки экрана
+        for (uint16_t line = dm->diap_max - dm->diap_min + title_line;
+             line <= lines_max; line++) {
+            ILI9341_WriteString(12, font.height * line, strClearName, font,
+                                ILI9341_BLACK, ILI9341_WHITE);
         }
 
         dm->redrawDispMenu = 0;
@@ -200,10 +208,10 @@ short disp_out_lines(stDispMenu* dm, FontDef font)
                             font.height * (i - dm->diap_min + title_line), menu,
                             font, ILI9341_BLACK, ILI9341_WHITE);
     }
-    for (uint16_t i = dm->diap_max; i < lines_max; i++) {
-        ILI9341_WriteString(12 * 18,
-                            font.height * (i - dm->diap_min + title_line),
-                            str_clear, font, ILI9341_BLACK, ILI9341_WHITE);
+    for (uint16_t line = dm->diap_max - dm->diap_min + title_line;
+         line <= lines_max; line++) {
+        ILI9341_WriteString(12 * 18, font.height * line, str_clear, font,
+                            ILI9341_BLACK, ILI9341_WHITE);
     }
     // Конец записи данных в дисплей
     return 0;
@@ -222,14 +230,17 @@ void disp_set_time(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
     RTC_TimeTypeDef sTime = {0};
     RTC_DateTypeDef sDate = {0};
 
+    // Read current date to preserve year
+    HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BIN);
+
     sTime.Hours = dm->time_tmp_hour;
     sTime.Minutes = dm->time_tmp_minute;
     sTime.Seconds = dm->time_tmp_second;
 
-    sDate.WeekDay = 1; // Monday (could be calculated)
+    sDate.WeekDay = 1;
     sDate.Month = dm->time_tmp_month;
     sDate.Date = dm->time_tmp_day;
-    sDate.Year = dm->time_tmp_year;
+    // Year preserved from current RTC value
 
     HAL_RTC_SetTime(hrtc, &sTime, RTC_FORMAT_BIN);
     HAL_RTC_SetDate(hrtc, &sDate, RTC_FORMAT_BIN);
@@ -263,7 +274,12 @@ void disp_button_press(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
             } else {
                 dm->menuCountEl = menuPCountElements;
             }
-            dm->diap_max = dm->menuCountEl;
+            dm->count = title_line;
+            dm->line = 0;
+            dm->diap_min = 0;
+            dm->diap_max = lines_max;
+            if (dm->diap_max > dm->menuCountEl)
+                dm->diap_max = dm->menuCountEl;
             dm->redrawDispMenu = 1;
             return;
         }
@@ -299,7 +315,6 @@ void disp_button_press(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
                         dm->time_tmp_second = sTime.Seconds;
                         dm->time_tmp_day = sDate.Date;
                         dm->time_tmp_month = sDate.Month;
-                        dm->time_tmp_year = sDate.Year;
                         dm->time_edit_mode = 1;
                         dm->redrawDispMenu = 1;
                     } else {
@@ -334,11 +349,6 @@ void disp_button_press(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
                                     dm->time_tmp_month++;
                                 else
                                     dm->time_tmp_month = 1;
-                            } else if (dm->line == menuTimeYear) {
-                                if (dm->time_tmp_year < 99)
-                                    dm->time_tmp_year++;
-                                else
-                                    dm->time_tmp_year = 0;
                             }
                             dm->redrawDispMenu = 1;
                             count_lt = 0;
@@ -369,11 +379,6 @@ void disp_button_press(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
                                     dm->time_tmp_month--;
                                 else
                                     dm->time_tmp_month = 12;
-                            } else if (dm->line == menuTimeYear) {
-                                if (dm->time_tmp_year > 0)
-                                    dm->time_tmp_year--;
-                                else
-                                    dm->time_tmp_year = 99;
                             }
                             dm->redrawDispMenu = 1;
                             count_lt = 0;
