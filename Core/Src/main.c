@@ -961,14 +961,38 @@ void StartDispTask(void const* argument)
 
         fltochar(&strMenuValsPoint[menuDHT22_1_humd][0], loc_dhtHum);
 
-        // Update time edit values when in time edit mode
-        if (dm.time_edit_mode) {
-            inttochar(&strMenuValsPoint[menuTimeHour][0], dm.time_tmp_hour);
-            inttochar(&strMenuValsPoint[menuTimeMinute][0], dm.time_tmp_minute);
-            inttochar(&strMenuValsPoint[menuTimeSecond][0], dm.time_tmp_second);
-            inttochar(&strMenuValsPoint[menuTimeDay][0], dm.time_tmp_day);
-            inttochar(&strMenuValsPoint[menuTimeMonth][0], dm.time_tmp_month);
-            inttochar(&strMenuValsPoint[menuTimeYear][0], dm.time_tmp_year);
+        // Always update time edit values display
+        {
+            RTC_TimeTypeDef sTimeRead = {0};
+            RTC_DateTypeDef sDateRead = {0};
+            int display_hour, display_minute, display_second, display_day, display_month, display_year;
+            
+            if (dm.time_edit_mode) {
+                // Show temp values while editing
+                display_hour = dm.time_tmp_hour;
+                display_minute = dm.time_tmp_minute;
+                display_second = dm.time_tmp_second;
+                display_day = dm.time_tmp_day;
+                display_month = dm.time_tmp_month;
+                display_year = dm.time_tmp_year;
+            } else {
+                // Show actual RTC time otherwise
+                HAL_RTC_GetTime(&hrtc, &sTimeRead, RTC_FORMAT_BIN);
+                HAL_RTC_GetDate(&hrtc, &sDateRead, RTC_FORMAT_BIN);
+                display_hour = sTimeRead.Hours;
+                display_minute = sTimeRead.Minutes;
+                display_second = sTimeRead.Seconds;
+                display_day = sDateRead.Date;
+                display_month = sDateRead.Month;
+                display_year = sDateRead.Year;
+            }
+            
+            inttochar(&strMenuValsPoint[menuTimeHour][0], display_hour);
+            inttochar(&strMenuValsPoint[menuTimeMinute][0], display_minute);
+            inttochar(&strMenuValsPoint[menuTimeSecond][0], display_second);
+            inttochar(&strMenuValsPoint[menuTimeDay][0], display_day);
+            inttochar(&strMenuValsPoint[menuTimeMonth][0], display_month);
+            inttochar(&strMenuValsPoint[menuTimeYear][0], display_year);
         }
         // КОНЕЦ Переносим данные в строки
 

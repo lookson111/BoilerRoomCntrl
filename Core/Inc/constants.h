@@ -138,7 +138,7 @@
 #define DELAY_SENSOR_INIT_MS    1000
 #define DELAY_BUTTON_DEBOUNCE_MS 100
 #define DELAY_EDIT_EXIT_MS      200
-#define DELAY_TIME_UPDATE_MS    200
+#define DELAY_TIME_UPDATE_MS    900
 #define DELAY_TIME_BASE_MS      1000
 
 /* ============================================================================

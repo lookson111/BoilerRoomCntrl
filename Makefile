@@ -68,7 +68,6 @@ C_SRCS := \
   Core/Src/stm32f1xx_it.c \
   Core/Src/freertos.c \
   Core/Src/DHT.c \
-  Core/Src/disp_spi.c \
   Core/Src/system_stm32f1xx.c \
   Core/ili9341/ili9341.c \
   Core/ili9341/ili9341_touch.c \

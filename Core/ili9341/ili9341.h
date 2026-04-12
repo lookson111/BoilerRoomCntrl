@@ -82,4 +82,8 @@ void ILI9341_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h,
 void ILI9341_InvertColors(bool invert);
 void ILI9341_SetRotation(uint8_t r);
 
+/* Current display dimensions (updated by ILI9341_SetRotation) */
+extern uint16_t ILI9341_WIDTH;
+extern uint16_t ILI9341_HEIGHT;
+
 #endif // __ILI9341_H__

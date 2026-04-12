@@ -67,10 +67,7 @@ void disp_time_view(stDispMenu* dm, RTC_HandleTypeDef* hrtc,
     time[6] = '0' + (sTime->Seconds / 10);
     time[7] = '0' + (sTime->Seconds % 10);
     time[8] = 0x00;
-    // Clear time row first to prevent garbage
-    ILI9341_FillRectangle(0, DISP_HEIGHT_PIXELS - DISP_TIME_ROW_HEIGHT, 
-                          DISP_WIDTH_LANDSCAPE, DISP_TIME_ROW_HEIGHT, ILI9341_WHITE);
-    ILI9341_WriteString(DISP_TIME_X_POS, (DISP_HEIGHT_PIXELS - DISP_TIME_ROW_HEIGHT), 
+    ILI9341_WriteString(DISP_TIME_X_POS, ILI9341_HEIGHT - DISP_TIME_ROW_HEIGHT,
                         time, Font_12x15, ILI9341_BLACK, ILI9341_WHITE);
     // конец обновления времени
 }
