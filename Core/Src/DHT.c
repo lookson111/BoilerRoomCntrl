@@ -1,4 +1,4 @@
-/* DHT library 
+/* DHT library
 
 MIT license
 written by Adafruit Industries
@@ -8,6 +8,7 @@ written by Adafruit Industries
 #include "FreeRTOS.h"
 #include "cmsis_os.h"
 #include "task.h"
+#include "../Inc/constants.h"
 
 static volatile uint32_t sysTickCount = 0;
 
@@ -101,19 +102,19 @@ char read(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
     uint8_t laststate = HIGH;
     uint8_t counter = 0;
     uint8_t j = 0, i;
-    _count = 10;
+    _count = DHT22_BIT_THRESHOLD;
     unsigned long currenttime;
 
-    // pull the pin high and wait 250 milliseconds
+    // pull the pin high and wait DHT22_INIT_DELAY_MS milliseconds
     HAL_GPIO_WritePin(DHT22_2_GPIO_Port, DHT22_2_Pin, GPIO_PIN_SET);
-    osDelay(250);
+    osDelay(DHT22_INIT_DELAY_MS);
 
     currenttime = millis();
     if (currenttime < _lastreadtime) {
         // ie there was a rollover
         _lastreadtime = 0;
     }
-    if (!firstreading && ((currenttime - _lastreadtime) < 2000)) {
+    if (!firstreading && ((currenttime - _lastreadtime) < DHT22_READ_INTERVAL_MS)) {
     }
     firstreading = FALSE;
     /*
@@ -124,29 +125,29 @@ char read(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
 
     data[0] = data[1] = data[2] = data[3] = data[4] = 0;
 
-    // now pull it low for ~20 milliseconds
+    // now pull it low for ~DHT22_PULL_LOW_DELAY_MS milliseconds
     pinMode(GPIO_Port, GPIO_Pin, OUTPUT);
     HAL_GPIO_WritePin(DHT22_2_GPIO_Port, DHT22_2_Pin, GPIO_PIN_RESET);
-    osDelay(20);
+    osDelay(DHT22_PULL_LOW_DELAY_MS);
     //cli();
     taskENTER_CRITICAL();
     HAL_GPIO_WritePin(DHT22_2_GPIO_Port, DHT22_2_Pin, GPIO_PIN_SET);
-    delay_us(10);
+    delay_us(DHT22_PULL_HIGH_DELAY_US);
     pinMode(GPIO_Port, GPIO_Pin, INPUT);
-    delay_us(1);
+    delay_us(DHT22_INPUT_SETUP_US);
     // read in timings
     for (i = 0; i < MAXTIMINGS; i++) {
         counter = 0;
         while (HAL_GPIO_ReadPin(DHT22_2_GPIO_Port, DHT22_2_Pin) == laststate) {
             counter++;
             delay_us(1);
-            if (counter == 255) {
+            if (counter == DHT22_TIMEOUT_COUNT) {
                 break;
             }
         }
         laststate = HAL_GPIO_ReadPin(DHT22_2_GPIO_Port, DHT22_2_Pin);
 
-        if (counter == 255)
+        if (counter == DHT22_TIMEOUT_COUNT)
             break;
 
         // ignore first 3 transitions
@@ -171,8 +172,8 @@ char read(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
   Serial.println(data[0] + data[1] + data[2] + data[3], HEX);
   */
 
-    // check we read 40 bits and that the checksum matches
-    if ((j >= 40) &&
+    // check we read DHT22_BIT_COUNT bits and that the checksum matches
+    if ((j >= DHT22_BIT_COUNT) &&
         (data[4] == ((data[0] + data[1] + data[2] + data[3]) & 0xFF))) {
         return TRUE;
     }

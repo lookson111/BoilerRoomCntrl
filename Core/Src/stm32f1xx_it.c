@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_it.h"
 #include "main.h"
+#include "../Inc/constants.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -56,8 +57,8 @@
 // Only counts COMPLETE cycles → naturally filters bounce, 1 count per detent
 // Works with ANY detent position (00, 01, 10, or 11)
 static volatile uint8_t enc_state = 0;
-#define DIR_CW  0x10
-#define DIR_CCW 0x20
+#define DIR_CW  ENCODER_DIR_CW
+#define DIR_CCW ENCODER_DIR_CCW
 static const uint8_t ttable[7][4] = {
     //         00       10       01       11
     {0,        2,       4,       0},   // 0: R_START
@@ -283,7 +284,7 @@ void USART3_IRQHandler(void)
     if ((USART3->SR & USART_SR_RXNE) != 0) {
         modBusData.frame[cout_rcvUART] = USART3->DR;
         cout_rcvUART++;
-        if (cout_rcvUART >= 32) {
+        if (cout_rcvUART >= UART_BUFFER_SIZE) {
             cout_rcvUART = 0;
         }
         fl_transmit_485 = 0;
@@ -308,15 +309,15 @@ void USART3_IRQHandler(void)
 void EXTI15_10_IRQHandler(void)
 {
     /* USER CODE BEGIN EXTI15_10_IRQn 0 */
-    if (EXTI->PR & ((1 << 10) | (1 << 11))) {
-        EXTI->PR |= (1 << 10);
-        EXTI->PR |= (1 << 11);
+    if (EXTI->PR & ((1U << EXTI_LINE_10_BIT) | (1U << EXTI_LINE_11_BIT))) {
+        EXTI->PR |= (1U << EXTI_LINE_10_BIT);
+        EXTI->PR |= (1U << EXTI_LINE_11_BIT);
 
         uint8_t ab = (uint8_t)HAL_GPIO_ReadPin(ER11_LINE1_GPIO_Port, ER11_LINE1_Pin) |
                      ((uint8_t)HAL_GPIO_ReadPin(ER11_LINE2_GPIO_Port, ER11_LINE2_Pin) << 1);
 
         uint8_t result = ttable[enc_state][ab];
-        enc_state = result & 0x0F;
+        enc_state = result & ENCODER_STATE_MASK;
 
         if (result & DIR_CW) {
             count_lt++;
@@ -326,8 +327,8 @@ void EXTI15_10_IRQHandler(void)
     }
 
     // EXTI12: Enter button
-    if (EXTI->PR & (1 << 12)) {
-        EXTI->PR |= (1 << 12);
+    if (EXTI->PR & (1U << EXTI_LINE_12_BIT)) {
+        EXTI->PR |= (1U << EXTI_LINE_12_BIT);
         if (HAL_GPIO_ReadPin(ER11_BUTTON_GPIO_Port, ER11_BUTTON_Pin)) {
             enterButton = 1;
         }

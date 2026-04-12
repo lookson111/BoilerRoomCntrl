@@ -1,6 +1,7 @@
 #include "SimpleModbusSlave.h"
 #include "cmsis_os.h"
 #include "main.h"
+#include "../Inc/constants.h"
 
 //UART_HandleTypeDef huart3;
 
@@ -23,21 +24,21 @@ void modbus_update_comms(ModBusTypeDef* modBusData, uint32_t baud)
     //(*ModbusPort).begin(baud, byteFormat);
 
 
-    // Modbus states that a baud rate higher than 19200 must use a fixed 750 us
-    // for inter character time out and 1.75 ms for a frame delay for baud rates
-    // below 19200 the timing is more critical and has to be calculated.
+    // Modbus states that a baud rate higher than MODBUS_BAUD_THRESHOLD must use a fixed MODBUS_T15_HIGH_BAUD us
+    // for inter character time out and MODBUS_T35_HIGH_BAUD for a frame delay for baud rates
+    // below MODBUS_BAUD_THRESHOLD the timing is more critical and has to be calculated.
     // E.g. 9600 baud in a 10 bit packet is 960 characters per second
     // In milliseconds this will be 960characters per 1000ms. So for 1 character
     // 1000ms/960characters is 1.04167ms per character and finally modbus states
     // an inter-character must be 1.5T or 1.5 times longer than a character. Thus
     // 1.5T = 1.04167ms * 1.5 = 1.5625ms. A frame delay is 3.5T.
 
-    if (baud > 19200) {
-        modBusData->T1_5 = 750;
-        modBusData->T3_5 = 1750;
+    if (baud > MODBUS_BAUD_THRESHOLD) {
+        modBusData->T1_5 = MODBUS_T15_HIGH_BAUD;
+        modBusData->T3_5 = MODBUS_T35_HIGH_BAUD;
     } else {
-        modBusData->T1_5 = 15000000 / baud; // 1T * 1.5 = T1.5
-        modBusData->T3_5 = 35000000 / baud; // 1T * 3.5 = T3.5
+        modBusData->T1_5 = MODBUS_T15_MULTIPLIER / baud; // 1T * 1.5 = T1.5
+        modBusData->T3_5 = MODBUS_T35_MULTIPLIER / baud; // 1T * 3.5 = T3.5
     }
 }
 
@@ -51,8 +52,8 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
         if (overflow)
             return modBusData->errorCount++;
 
-        // The minimum request packet is 8 bytes for function 3 & 16
-        if (modBusData->buffer > 7) {
+        // The minimum request packet is MODBUS_MIN_REQUEST_LEN bytes for function 3 & 16
+        if (modBusData->buffer > MODBUS_MIN_REQUEST_LEN - 1) {
             uint8_t id = modBusData->frame[0];
             // широковещательные комады
             modBusData->broadcastFlag = 0;
@@ -114,7 +115,7 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
                                         temp >>
                                         8; // split the register into 2 bytes
                                     address++;
-                                    modBusData->frame[address] = temp & 0xFF;
+                                    modBusData->frame[address] = temp & MODBUS_CRC_MASK;
                                     address++;
                                 }
 
@@ -123,7 +124,7 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
                                 modBusData->frame[responseFrameSize - 2] =
                                     crc16 >> 8;
                                 modBusData->frame[responseFrameSize - 1] =
-                                    crc16 & 0xFF;
+                                    crc16 & MODBUS_CRC_MASK;
 
                                 sendPacket(modBusData, responseFrameSize);
                             } else
@@ -138,8 +139,8 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
                         // Check if the recieved number of bytes matches the calculated bytes
                         // minus the request bytes.
                         // id + function + (2 * address bytes) + (2 * no of register bytes) +
-                        // byte count + (2 * CRC bytes) = 9 bytes
-                        if (modBusData->frame[6] == (modBusData->buffer - 9)) {
+                        // byte count + (2 * CRC bytes) = MODBUS_MIN_REQUEST_LEN + 1 bytes
+                        if (modBusData->frame[6] == (modBusData->buffer - (MODBUS_MIN_REQUEST_LEN + 1))) {
                             if (startingAddress <
                                 modBusData
                                     ->holdingRegsSize) // check exception 2 ILLEGAL DATA ADDRESS
@@ -149,7 +150,7 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
                                         ->holdingRegsSize) // check exception 3 ILLEGAL DATA VALUE
                                 {
                                     address =
-                                        7; // start at the 8th byte in the frame
+                                        MODBUS_MIN_REQUEST_LEN - 1; // start at the MODBUS_MIN_REQUEST_LENth byte in the frame
 
                                     for (index = startingAddress;
                                          index < maxData; index++) {
@@ -159,17 +160,17 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
                                         address += 2;
                                     }
 
-                                    // only the first 6 bytes are used for CRC calculation
-                                    crc16 = calculateCRC(modBusData, 6);
+                                    // only the first MODBUS_MIN_REQUEST_LEN - 2 bytes are used for CRC calculation
+                                    crc16 = calculateCRC(modBusData, MODBUS_MIN_REQUEST_LEN - 2);
                                     modBusData->frame[6] =
                                         crc16 >> 8; // split crc into 2 bytes
-                                    modBusData->frame[7] = crc16 & 0xFF;
+                                    modBusData->frame[7] = crc16 & MODBUS_CRC_MASK;
 
-                                    // a function 16 response is an echo of the first 6 bytes from
+                                    // a function 16 response is an echo of the first MODBUS_MIN_REQUEST_LEN - 2 bytes from
                                     // the request + 2 crc bytes
                                     if (!modBusData
                                              ->broadcastFlag) // don't respond if it's a broadcast message
-                                        sendPacket(modBusData, 8);
+                                        sendPacket(modBusData, MODBUS_MIN_REQUEST_LEN);
                                 } else
                                     exceptionResponse(
                                         modBusData,
@@ -186,7 +187,7 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
                 } else                        // checksum failed
                     modBusData->errorCount++;
             } // incorrect id
-        } else if (modBusData->buffer > 0 && modBusData->buffer < 8)
+        } else if (modBusData->buffer > 0 && modBusData->buffer < MODBUS_MIN_REQUEST_LEN)
             modBusData->errorCount++; // corrupted packet
     }
     return modBusData->errorCount;
@@ -201,35 +202,35 @@ void exceptionResponse(ModBusTypeDef* modBusData, uint8_t exception)
         modBusData->frame[0] = modBusData->slaveID;
         modBusData->frame[1] =
             (modBusData->function |
-             0x80); // set MSB bit high, informs the master of an exception
+             MODBUS_EXCEPT_BIT); // set MSB bit high, informs the master of an exception
         modBusData->frame[2] = exception;
         uint16_t crc16 =
-            calculateCRC(modBusData, 3); // ID, function|0x80, exception code
+            calculateCRC(modBusData, MODBUS_EXCEPT_RESPONSE_SIZE); // ID, function|0x80, exception code
         modBusData->frame[3] = crc16 >> 8;
-        modBusData->frame[4] = crc16 & 0xFF;
-        // exception response is always 5 bytes
+        modBusData->frame[4] = crc16 & MODBUS_CRC_MASK;
+        // exception response is always MODBUS_EXCEPT_RESPONSE_SIZE bytes
         // ID, function + 0x80, exception code, 2 bytes crc
-        sendPacket(modBusData, 5);
+        sendPacket(modBusData, MODBUS_EXCEPT_RESPONSE_SIZE);
     }
 }
 
 uint16_t calculateCRC(ModBusTypeDef* modBusData, uint8_t bufferSize)
 {
     uint16_t temp, temp2, flag;
-    temp = 0xFFFF;
+    temp = MODBUS_CRC_INIT;
     for (uint8_t i = 0; i < bufferSize; i++) {
         temp = temp ^ modBusData->frame[i];
         for (uint8_t j = 1; j <= 8; j++) {
             flag = temp & 0x0001;
             temp >>= 1;
             if (flag)
-                temp ^= 0xA001;
+                temp ^= MODBUS_CRC_POLY;
         }
     }
     // Reverse byte order.
     temp2 = temp >> 8;
     temp = (temp << 8) | temp2;
-    temp &= 0xFFFF;
+    temp &= MODBUS_CRC_MASK;
     // the returned value is already swapped
     // crcLo byte is first & crcHi byte is last
     return temp;
@@ -240,7 +241,7 @@ void sendPacket(ModBusTypeDef* modBusData, uint8_t bufferSize)
     HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_SET);
 
     HAL_UART_Transmit(modBusData->uart, (uint8_t*)modBusData->frame, bufferSize,
-                      10);
+                      UART_TRANSMIT_TIMEOUT);
     fl_transmit_485 = 1;
     TIM4->ARR = modBusData->T1_5;
     TIM4->CNT = 0;

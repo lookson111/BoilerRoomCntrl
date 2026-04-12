@@ -1,12 +1,13 @@
 /* vim: set ai et ts=4 sw=4: */
 #include "ili9341.h"
 #include "stm32f1xx_hal.h"
+#include "../Inc/constants.h"
 
-#define QUANTPIXELLINE 320 * 4
-#define QUANTLINES     240 / 4
+#define QUANTPIXELLINE DISP_WIDTH_LANDSCAPE * 4
+#define QUANTLINES     DISP_HEIGHT_PIXELS / 4
 
-uint16_t ILI9341_WIDTH = 240;
-uint16_t ILI9341_HEIGHT = 320;
+uint16_t ILI9341_WIDTH = DISP_WIDTH_PIXELS;
+uint16_t ILI9341_HEIGHT = DISP_HEIGHT_PIXELS;
 
 extern uint8_t dma_spi_fl;
 extern uint32_t dma_spi_cnt;
@@ -85,7 +86,7 @@ void ILI9341_Init()
 
     // SOFTWARE RESET
     ILI9341_WriteCommand(0x01);
-    HAL_Delay(1000);
+    HAL_Delay(DELAY_SENSOR_INIT_MS);
 
     // POWER CONTROL A
     ILI9341_WriteCommand(0xCB);
@@ -347,7 +348,7 @@ void ILI9341_WriteString_DMA(uint16_t x, uint16_t y, const char* str,
         dma_spi_cnt = 1;
         dma_spi_fl = 0;
         HAL_SPI_Transmit_DMA(ILI9341_SPI_PORT, frm_buf, char_count);
-        uint32_t timeout = HAL_GetTick() + 1000;
+        uint32_t timeout = HAL_GetTick() + DELAY_TIME_BASE_MS;
         while (!dma_spi_fl && HAL_GetTick() < timeout) {
             osDelay(1);
         }
@@ -440,26 +441,26 @@ void ILI9341_SetRotation(uint8_t r)
         case 0:
             data[0] = 0x48;
             ILI9341_WriteData(data, sizeof(data));
-            ILI9341_WIDTH = 240;
-            ILI9341_HEIGHT = 320;
+            ILI9341_WIDTH = DISP_WIDTH_PIXELS;
+            ILI9341_HEIGHT = DISP_HEIGHT_PIXELS;
             break;
         case 1:
             data[0] = 0x28;
             ILI9341_WriteData(data, sizeof(data));
-            ILI9341_WIDTH = 320;
-            ILI9341_HEIGHT = 240;
+            ILI9341_WIDTH = DISP_WIDTH_LANDSCAPE;
+            ILI9341_HEIGHT = DISP_HEIGHT_LANDSCAPE;
             break;
         case 2:
             data[0] = 0x88;
             ILI9341_WriteData(data, sizeof(data));
-            ILI9341_WIDTH = 240;
-            ILI9341_HEIGHT = 320;
+            ILI9341_WIDTH = DISP_WIDTH_PIXELS;
+            ILI9341_HEIGHT = DISP_HEIGHT_PIXELS;
             break;
         case 3:
             data[0] = 0xE8;
             ILI9341_WriteData(data, sizeof(data));
-            ILI9341_WIDTH = 320;
-            ILI9341_HEIGHT = 240;
+            ILI9341_WIDTH = DISP_WIDTH_LANDSCAPE;
+            ILI9341_HEIGHT = DISP_HEIGHT_LANDSCAPE;
             break;
     }
     ILI9341_Unselect();

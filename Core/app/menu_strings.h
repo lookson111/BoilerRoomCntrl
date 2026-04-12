@@ -8,10 +8,11 @@
 #ifndef INC_MENU_STRINGS_H_
 #define INC_MENU_STRINGS_H_
 
+#include "../Inc/constants.h"
 
 #define MENUCOUNTPARAM 11 //8+3
-#define CNTMSYMINSTR   17 // символов в строке в названиях
-#define CNTVSYMINSTR   7 // символов в строке значений
+#define CNTMSYMINSTR   MENU_NAME_STR_LEN // символов в строке в названиях
+#define CNTVSYMINSTR   MENU_VALUE_STR_LEN // символов в строке значений
 
 #define ITNONE  0
 #define ITONOFF 1
@@ -57,6 +58,7 @@ enum {
     menuTimeSecond, // Секунды
     menuTimeDay,    // День
     menuTimeMonth,  // Месяц
+    menuTimeYear,   // Год
     menuPCountElements
 };
 
@@ -73,7 +75,7 @@ typedef struct {
 	const char val[CNTVSYMINSTR];
 } dispMenu;
 */
-static const char str_title[titleCountElements][13] = {
+static const char str_title[titleCountElements][MENU_TITLE_STR_LEN] = {
     {0xcc, 0xee, 0xed, 0xe8, 0xf2, 0xee, 0xf0, 0x00}, // Монитор
     {0xd3, 0xf1, 0xf2, 0xe0, 0xe2, 0xea, 0xe8, 0x00}  // Уставки
 };
@@ -90,8 +92,8 @@ extern const char strMenuNameData[menuCountElements][CNTMSYMINSTR];
 extern const char strMenuNamePoint[menuPCountElements][CNTMSYMINSTR];
 extern const char strMenuTypeValPoint[menuPCountElements];
 
-extern char strMenuValsData[menuCountElements][7];
-extern char strMenuValsPoint[menuPCountElements][7];
+extern char strMenuValsData[menuCountElements][MENU_VALUE_STR_LEN];
+extern char strMenuValsPoint[menuPCountElements][MENU_VALUE_STR_LEN];
 
 
 #endif /* INC_MENU_STRINGS_H_ */

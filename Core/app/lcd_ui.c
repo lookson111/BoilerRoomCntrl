@@ -10,6 +10,7 @@
 #include <string.h>
 #include "../ili9341/ili9341.h"
 #include "hal_utils.h"
+#include "constants.h"
 #include "stdint.h"
 
 St_Rel_manage rel_manage[] = {
@@ -20,8 +21,8 @@ St_Rel_manage rel_manage[] = {
     {WtoHS_GPIO_Port, WtoHS_Pin, menuRelPompHeatSys, 0},
     {WATER_VALVE_GPIO_Port, WATER_VALVE_Pin, menuRelValveWater, 0}};
 
-const char title_line = 1; // первая строка титульная
-const char lines_max = 14; // максимальное количество отображаемых строк
+const char title_line = DISP_TITLE_LINE; // первая строка титульная
+const char lines_max = DISP_LINES_MAX; // максимальное количество отображаемых строк
 const char disp_znak[] = {'>', 0x00, ' ', 0x00};
 
 void disp_init(stDispMenu* dm)
@@ -43,6 +44,7 @@ void disp_init(stDispMenu* dm)
     dm->time_tmp_second = 0;
     dm->time_tmp_day = 1;
     dm->time_tmp_month = 1;
+    dm->time_tmp_year = 25;
 
     ILI9341_Init();
     ILI9341_SetRotation(1);
@@ -66,9 +68,10 @@ void disp_time_view(stDispMenu* dm, RTC_HandleTypeDef* hrtc,
     time[7] = '0' + (sTime->Seconds % 10);
     time[8] = 0x00;
     // Clear time row first to prevent garbage
-    ILI9341_FillRectangle(0, 240 - 15, 320, 15, ILI9341_WHITE);
-    ILI9341_WriteString(12 * 19, (240 - 15), time, Font_12x15, ILI9341_BLACK,
-                        ILI9341_WHITE);
+    ILI9341_FillRectangle(0, DISP_HEIGHT_PIXELS - DISP_TIME_ROW_HEIGHT, 
+                          DISP_WIDTH_LANDSCAPE, DISP_TIME_ROW_HEIGHT, ILI9341_WHITE);
+    ILI9341_WriteString(DISP_TIME_X_POS, (DISP_HEIGHT_PIXELS - DISP_TIME_ROW_HEIGHT), 
+                        time, Font_12x15, ILI9341_BLACK, ILI9341_WHITE);
     // конец обновления времени
 }
 
@@ -173,11 +176,11 @@ short disp_out_lines(stDispMenu* dm, FontDef font)
             dm->clrWordsRt = ILI9341_WHITE;
         }
         // Рисуем заголовки
-        ILI9341_FillRectangle(0, 0, 160, font.height, dm->clrRectLeft);
-        ILI9341_FillRectangle(160, 0, 160, font.height, dm->clrRectRight);
-        ILI9341_WriteString(12, 0, &str_title[0][0], font, dm->clrWordsLf,
+        ILI9341_FillRectangle(0, 0, DISP_HALF_WIDTH, font.height, dm->clrRectLeft);
+        ILI9341_FillRectangle(DISP_HALF_WIDTH, 0, DISP_HALF_WIDTH, font.height, dm->clrRectRight);
+        ILI9341_WriteString(DISP_TITLE_X_POS_LEFT, 0, &str_title[0][0], font, dm->clrWordsLf,
                             dm->clrRectLeft);
-        ILI9341_WriteString(12 + 160, 0, &str_title[1][0], font, dm->clrWordsRt,
+        ILI9341_WriteString(DISP_TITLE_X_POS_RIGHT, 0, &str_title[1][0], font, dm->clrWordsRt,
                             dm->clrRectRight);
         // отображаем пункты меню
         for (uint16_t i = dm->diap_min; i < dm->diap_max; i++) {
@@ -204,13 +207,13 @@ short disp_out_lines(stDispMenu* dm, FontDef font)
             menu = &strMenuValsData[i][0];
         else
             menu = &strMenuValsPoint[i][0];
-        ILI9341_WriteString(12 * 18,
+        ILI9341_WriteString(DISP_VALUES_X_POS,
                             font.height * (i - dm->diap_min + title_line), menu,
                             font, ILI9341_BLACK, ILI9341_WHITE);
     }
     for (uint16_t line = dm->diap_max - dm->diap_min + title_line;
          line <= lines_max; line++) {
-        ILI9341_WriteString(12 * 18, font.height * line, str_clear, font,
+        ILI9341_WriteString(DISP_VALUES_X_POS, font.height * line, str_clear, font,
                             ILI9341_BLACK, ILI9341_WHITE);
     }
     // Конец записи данных в дисплей
@@ -230,9 +233,6 @@ void disp_set_time(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
     RTC_TimeTypeDef sTime = {0};
     RTC_DateTypeDef sDate = {0};
 
-    // Read current date to preserve year
-    HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BIN);
-
     sTime.Hours = dm->time_tmp_hour;
     sTime.Minutes = dm->time_tmp_minute;
     sTime.Seconds = dm->time_tmp_second;
@@ -240,7 +240,7 @@ void disp_set_time(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
     sDate.WeekDay = 1;
     sDate.Month = dm->time_tmp_month;
     sDate.Date = dm->time_tmp_day;
-    // Year preserved from current RTC value
+    sDate.Year = dm->time_tmp_year;
 
     HAL_RTC_SetTime(hrtc, &sTime, RTC_FORMAT_BIN);
     HAL_RTC_SetDate(hrtc, &sDate, RTC_FORMAT_BIN);
@@ -250,7 +250,7 @@ void disp_set_time(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
 void disp_poweron(stDispMenu* dm)
 {
     if (dm->pwr_on) {
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < RELAY_COUNT; i++) {
             rel_manage[i].fl_on_off = GPIO_PIN_RESET;
             memcpy(&strMenuValsPoint[rel_manage[i].line][0], str_off,
                    CNTVSYMINSTR);
@@ -290,7 +290,7 @@ void disp_button_press(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
                 case ITNONE:
                     break;
                 case ITONOFF:
-                    for (int i = 0; i < 6; i++) {
+                    for (int i = 0; i < RELAY_COUNT; i++) {
                         if (dm->line == rel_manage[i].line) {
                             rel_manage[i].fl_on_off = ~rel_manage[i].fl_on_off;
                             memcpy(&strMenuValsPoint[rel_manage[i].line][0],
@@ -315,6 +315,7 @@ void disp_button_press(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
                         dm->time_tmp_second = sTime.Seconds;
                         dm->time_tmp_day = sDate.Date;
                         dm->time_tmp_month = sDate.Month;
+                        dm->time_tmp_year = sDate.Year;
                         dm->time_edit_mode = 1;
                         dm->redrawDispMenu = 1;
                     } else {
@@ -332,63 +333,73 @@ void disp_button_press(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
                             // Increment value based on current menu item
                             if (dm->line == menuTimeHour) {
                                 dm->time_tmp_hour =
-                                    (dm->time_tmp_hour + 1) % 24;
+                                    (dm->time_tmp_hour + 1) % TIME_HOUR_MAX;
                             } else if (dm->line == menuTimeMinute) {
                                 dm->time_tmp_minute =
-                                    (dm->time_tmp_minute + 1) % 60;
+                                    (dm->time_tmp_minute + 1) % TIME_MINUTE_MAX;
                             } else if (dm->line == menuTimeSecond) {
                                 dm->time_tmp_second =
-                                    (dm->time_tmp_second + 1) % 60;
+                                    (dm->time_tmp_second + 1) % TIME_SECOND_MAX;
                             } else if (dm->line == menuTimeDay) {
-                                if (dm->time_tmp_day < 31)
+                                if (dm->time_tmp_day < TIME_DAY_MAX)
                                     dm->time_tmp_day++;
                                 else
-                                    dm->time_tmp_day = 1;
+                                    dm->time_tmp_day = TIME_DAY_MIN;
                             } else if (dm->line == menuTimeMonth) {
-                                if (dm->time_tmp_month < 12)
+                                if (dm->time_tmp_month < TIME_MONTH_MAX)
                                     dm->time_tmp_month++;
                                 else
-                                    dm->time_tmp_month = 1;
+                                    dm->time_tmp_month = TIME_MONTH_MIN;
+                            } else if (dm->line == menuTimeYear) {
+                                if (dm->time_tmp_year < TIME_YEAR_MAX)
+                                    dm->time_tmp_year++;
+                                else
+                                    dm->time_tmp_year = TIME_YEAR_MIN;
                             }
                             dm->redrawDispMenu = 1;
                             count_lt = 0;
                         } else if (count_lt < 0) {
                             // Decrement value based on current menu item
                             if (dm->line == menuTimeHour) {
-                                if (dm->time_tmp_hour > 0)
+                                if (dm->time_tmp_hour > TIME_HOUR_MIN)
                                     dm->time_tmp_hour--;
                                 else
-                                    dm->time_tmp_hour = 23;
+                                    dm->time_tmp_hour = TIME_HOUR_MAX - 1;
                             } else if (dm->line == menuTimeMinute) {
-                                if (dm->time_tmp_minute > 0)
+                                if (dm->time_tmp_minute > TIME_MINUTE_MIN)
                                     dm->time_tmp_minute--;
                                 else
-                                    dm->time_tmp_minute = 59;
+                                    dm->time_tmp_minute = TIME_MINUTE_MAX - 1;
                             } else if (dm->line == menuTimeSecond) {
-                                if (dm->time_tmp_second > 0)
+                                if (dm->time_tmp_second > TIME_SECOND_MIN)
                                     dm->time_tmp_second--;
                                 else
-                                    dm->time_tmp_second = 59;
+                                    dm->time_tmp_second = TIME_SECOND_MAX - 1;
                             } else if (dm->line == menuTimeDay) {
-                                if (dm->time_tmp_day > 1)
+                                if (dm->time_tmp_day > TIME_DAY_MIN)
                                     dm->time_tmp_day--;
                                 else
-                                    dm->time_tmp_day = 31;
+                                    dm->time_tmp_day = TIME_DAY_MAX;
                             } else if (dm->line == menuTimeMonth) {
-                                if (dm->time_tmp_month > 1)
+                                if (dm->time_tmp_month > TIME_MONTH_MIN)
                                     dm->time_tmp_month--;
                                 else
-                                    dm->time_tmp_month = 12;
+                                    dm->time_tmp_month = TIME_MONTH_MAX;
+                            } else if (dm->line == menuTimeYear) {
+                                if (dm->time_tmp_year > TIME_YEAR_MIN)
+                                    dm->time_tmp_year--;
+                                else
+                                    dm->time_tmp_year = TIME_YEAR_MAX;
                             }
                             dm->redrawDispMenu = 1;
                             count_lt = 0;
                         }
 
                         // необходима задержка
-                        osDelay(100);
+                        osDelay(DELAY_BUTTON_DEBOUNCE_MS);
                         if (enterButton) {
                             flexit = false;
-                            osDelay(200);
+                            osDelay(DELAY_EDIT_EXIT_MS);
                             enterButton = 0;
                         }
                     } while (flexit);
@@ -404,10 +415,10 @@ void disp_button_press(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
                         }
 
                         // необходима задержка
-                        osDelay(100);
+                        osDelay(DELAY_BUTTON_DEBOUNCE_MS);
                         if (enterButton) {
                             flexit = false;
-                            osDelay(200);
+                            osDelay(DELAY_EDIT_EXIT_MS);
                             enterButton = 0;
                         }
                     } while (flexit);

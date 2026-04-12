@@ -30,6 +30,7 @@
 #include "../ili9341/fonts.h"
 #include "../ili9341/ili9341.h"
 #include "DHT.h"
+#include "constants.h"
 #include "stdint.h"
 
 /* USER CODE END Includes */
@@ -106,17 +107,17 @@ int count_lt = 0;
 int count_rt = 0;
 int8_t enterButton = 0;
 int8_t fl_on_off = 0;
-uint8_t buff[32] = {0};
+uint8_t buff[UART_BUFFER_SIZE] = {0};
 uint8_t cout_rcvUART = 0;
 uint8_t fl_transmit_485 = 0;
+uint8_t fl_endreceive485 = 0;
 uint32_t tim4cnt = 0;
 ModBusTypeDef modBusData;
-uint8_t fl_endreceive485 = 0;
-uint8_t slaveID = 1;
+uint8_t slaveID = MODBUS_SLAVE_ID;
 uint16_t holdingRegs[HOLDING_REGS_SIZE_BR] = {0};
 
 /* DHT global definitions (declared extern in DHT.h) */
-uint8_t data[6] = {0};
+uint8_t data[DHT22_DATA_SIZE] = {0};
 uint8_t _pin = 0, _type = 0, _count = 0;
 unsigned long _lastreadtime = 0;
 char firstreading = 1;
@@ -125,8 +126,8 @@ char firstreading = 1;
 SPI_HandleTypeDef* ILI9341_SPI_PORT;
 
 /* Menu arrays (declared extern in mymenu.h) - defined in mymenu.c */
-char strMenuValsData[menuCountElements][7] = {0};
-char strMenuValsPoint[menuPCountElements][7] = {0};
+char strMenuValsData[menuCountElements][MENU_VALUE_STR_LEN] = {0};
+char strMenuValsPoint[menuPCountElements][MENU_VALUE_STR_LEN] = {0};
 
 /* Channel enums */
 int enChannelsTr = en_tr1;
@@ -235,15 +236,15 @@ int main(void)
 
     /* Create the thread(s) */
     /* definition and creation of defaultTask */
-    osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+    osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, TASK_STACK_DEFAULT);
     defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
     /* definition and creation of sensReadTask */
-    osThreadDef(sensReadTask, StartSensReadTask, osPriorityNormal, 0, 128);
+    osThreadDef(sensReadTask, StartSensReadTask, osPriorityNormal, 0, TASK_STACK_SENSOR);
     sensReadTaskHandle = osThreadCreate(osThread(sensReadTask), NULL);
 
     /* definition and creation of dispTask */
-    osThreadDef(dispTask, StartDispTask, osPriorityNormal, 0, 800);
+    osThreadDef(dispTask, StartDispTask, osPriorityNormal, 0, TASK_STACK_DISPLAY);
     dispTaskHandle = osThreadCreate(osThread(dispTask), NULL);
 
     /* USER CODE BEGIN RTOS_THREADS */
@@ -369,7 +370,7 @@ static void MX_I2C1_Init(void)
 
     /* USER CODE END I2C1_Init 1 */
     hi2c1.Instance = I2C1;
-    hi2c1.Init.ClockSpeed = 100000;
+    hi2c1.Init.ClockSpeed = I2C_CLOCK_SPEED;
     hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
     hi2c1.Init.OwnAddress1 = 0;
     hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -415,17 +416,17 @@ static void MX_RTC_Init(void)
 
         /** Initialize RTC and set the Time and Date
   */
-        sTime.Hours = 12;
-        sTime.Minutes = 0;
-        sTime.Seconds = 0;
+        sTime.Hours = RTC_DEFAULT_HOUR;
+        sTime.Minutes = RTC_DEFAULT_MINUTE;
+        sTime.Seconds = RTC_DEFAULT_SECOND;
 
         if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK) {
             Error_Handler();
         }
         DateToUpdate.WeekDay = RTC_WEEKDAY_MONDAY;
-        DateToUpdate.Month = RTC_MONTH_JANUARY;
-        DateToUpdate.Date = 1;
-        DateToUpdate.Year = 25;
+        DateToUpdate.Month = RTC_DEFAULT_MONTH;
+        DateToUpdate.Date = RTC_DEFAULT_DAY;
+        DateToUpdate.Year = RTC_DEFAULT_YEAR;
 
         if (HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN) != HAL_OK) {
             Error_Handler();
@@ -770,11 +771,11 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void const* argument)
 {
     /* USER CODE BEGIN 5 */
-    osDelay(900);
+    osDelay(DELAY_INIT_MS);
     const char wmsg[] = "Some data";
     char rmsg[sizeof(wmsg)];
-    uint16_t devAddr = (0x50 << 1);
-    uint16_t memAddr = 0x0010;
+    uint16_t devAddr = (I2C_EEPROM_ADDR << 1);
+    uint16_t memAddr = I2C_MEM_ADDR_INIT;
 
     HAL_StatusTypeDef status;
 
@@ -796,7 +797,7 @@ void StartDefaultTask(void const* argument)
             //    перенести __HAL_RCC_I2C1_CLK_ENABLE(); до                 ///
             //    __HAL_RCC_GPIOB_CLK_ENABLE();                                            ///
             HAL_I2C_Mem_Read(&hi2c1, devAddr, memAddr, I2C_MEMADD_SIZE_16BIT,
-                             (uint8_t*)rmsg, sizeof(wmsg), 100);
+                             (uint8_t*)rmsg, sizeof(wmsg), I2C_TIMEOUT_MS);
         }
     }
     /* USER CODE END 5 */
@@ -813,7 +814,7 @@ void StartSensReadTask(void const* argument)
 {
     /* USER CODE BEGIN StartSensReadTask */
 
-    osDelay(1000);
+    osDelay(DELAY_SENSOR_INIT_MS);
     DWT_Init();
     begin(DHT22_2_GPIO_Port, DHT22_2_Pin);
 
@@ -824,7 +825,7 @@ void StartSensReadTask(void const* argument)
     float RI;
     float RI_1;
     uint32_t start_time = millis();
-    uint32_t update_time = 1000;
+    uint32_t update_time = DELAY_TIME_BASE_MS;
     char hum_mes = 1;
     char tmp_mes = 1;
     initManagePressHeatingSys(&managePressHeatingSys, PM_1_GPIO_Port, PM_1_Pin);
@@ -852,12 +853,12 @@ void StartSensReadTask(void const* argument)
         }
         for (uint8_t j = 0; j < enTrChanEnd; j++) {
             ADC = ADC_Result(&hadc1, channelsADCTr[j]);
-            Rt = 1000 * ((3000 * ADC) / (4095 - ADC));
-            for (uint8_t i = 0; i < 151; i++) {
+            Rt = THERMISTOR_BASE_R * ((THERMISTOR_REF_R * ADC) / (VOLT_DIV_4095 - ADC));
+            for (uint8_t i = 0; i < THERMISTOR_TABLE_SIZE; i++) {
                 if (Rt > tTR_temper_volt_arr[i]) {
                     RI = tTR_temper_volt_arr[i];
                     RI_1 = tTR_temper_volt_arr[i - 1];
-                    float tval = Rt / (RI - RI_1) - RI_1 / (RI - RI_1) + i - 26;
+                    float tval = Rt / (RI - RI_1) - RI_1 / (RI - RI_1) + i - THERMISTOR_BASE_OFFSET;
                     osMutexWait(sensorDataMutexHandle, osWaitForever);
                     travg[j] = tval;
                     osMutexRelease(sensorDataMutexHandle);
@@ -869,8 +870,8 @@ void StartSensReadTask(void const* argument)
         for (uint8_t i = 0; i < enPmChanEnd; i++) {
             pmavgadc[i] = ADC_Result(&hadc1, channelsADCPm[i]);
             Rt = pmavgadc[i];
-            Rt = Rt / 4095 * 3.3 * 1.4751;
-            float pval = (Rt * 50 - 25) / 14.5038;
+            Rt = Rt / VOLT_DIV_4095_DIV * PRESSURE_REF_VOLT * PRESSURE_SCALE;
+            float pval = (Rt * PRESSURE_MULT - PRESSURE_OFFSET) / PRESSURE_DIV;
             osMutexWait(sensorDataMutexHandle, osWaitForever);
             pmavg[i] = pval;
             osMutexRelease(sensorDataMutexHandle);
@@ -907,7 +908,7 @@ void StartDispTask(void const* argument)
     /* USER CODE BEGIN StartDispTask */
     /* Infinite loop */
 
-    osDelay(1000);
+    osDelay(DELAY_SENSOR_INIT_MS);
 
     HAL_GPIO_WritePin(DISP_BLK_GPIO_Port, DISP_BLK_Pin, GPIO_PIN_SET);
 
@@ -916,10 +917,10 @@ void StartDispTask(void const* argument)
     disp_init(&dm);
 
     for (int i = 0; i < menuCountElements; i++) {
-        memcpy(&strMenuValsData[i][0], str_clear, 7);
+        memcpy(&strMenuValsData[i][0], str_clear, MENU_VALUE_STR_LEN);
     }
     for (int i = 0; i < menuPCountElements; i++) {
-        memcpy(&strMenuValsPoint[i][0], str_clear, 7);
+        memcpy(&strMenuValsPoint[i][0], str_clear, MENU_VALUE_STR_LEN);
     }
 
     disp_poweron(&dm);
@@ -928,8 +929,8 @@ void StartDispTask(void const* argument)
         static uint32_t last_time_update = 0;
         uint32_t now = HAL_GetTick();
 
-        // Update time every 200ms
-        if (now - last_time_update >= 200) {
+        // Update time every DELAY_TIME_UPDATE_MS
+        if (now - last_time_update >= DELAY_TIME_UPDATE_MS) {
             disp_time_view(&dm, &hrtc, &sTime, &DateToUpdate);
             last_time_update = now;
         }
@@ -967,6 +968,7 @@ void StartDispTask(void const* argument)
             inttochar(&strMenuValsPoint[menuTimeSecond][0], dm.time_tmp_second);
             inttochar(&strMenuValsPoint[menuTimeDay][0], dm.time_tmp_day);
             inttochar(&strMenuValsPoint[menuTimeMonth][0], dm.time_tmp_month);
+            inttochar(&strMenuValsPoint[menuTimeYear][0], dm.time_tmp_year);
         }
         // КОНЕЦ Переносим данные в строки
 

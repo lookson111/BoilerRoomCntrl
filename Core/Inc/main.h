@@ -33,6 +33,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "../modbus/SimpleModbusSlave.h"
+#include "constants.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -47,7 +48,7 @@ extern int count_lt;
 extern int count_rt;
 extern int8_t enterButton;
 extern int8_t fl_on_off;
-extern uint8_t buff[32];
+extern uint8_t buff[UART_BUFFER_SIZE];
 extern uint8_t cout_rcvUART;
 extern uint8_t fl_transmit_485;
 extern uint32_t tim4cnt;

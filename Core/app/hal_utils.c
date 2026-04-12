@@ -5,6 +5,7 @@
  *      Author: Rinat
  */
 #include "hal_utils.h"
+#include "constants.h"
 
 void fltochar(char* tmpl, float fltdata)
 {
@@ -13,18 +14,18 @@ void fltochar(char* tmpl, float fltdata)
     int medData;
     int k;
     int bool = 0;
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < STR_BUF_SIZE_6; i++) {
         tmpl[i] = ' ';
     }
-    tmpl[6] = 0x00;
+    tmpl[STR_BUF_SIZE_6] = STR_NULL_TERMINATOR;
 
-    if ((fltData > 100) || (fltData < -50)) {
+    if ((fltData > FLOAT_TEMP_MAX) || (fltData < FLOAT_TEMP_MIN)) {
         return;
     }
-    if ((fltData < 100) && (fltData > 1)) {
+    if ((fltData < FLOAT_TEMP_MAX) && (fltData > 1)) {
         intData = 0;
     }
-    intData = fltData * 100;
+    intData = fltData * FLOAT_SCALE_FACTOR;
     tmpl[3] = '.';
     for (int i = 4; i >= 0; i--) {
         medData = intData % 10;
@@ -79,10 +80,10 @@ void inttochar(char* tmpl, uint32_t intdata)
     int medData;
     int k;
     int bool = 0;
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < STR_BUF_SIZE_6; i++) {
         tmpl[i] = ' ';
     }
-    tmpl[6] = 0x00;
+    tmpl[STR_BUF_SIZE_6] = STR_NULL_TERMINATOR;
     for (int i = 5; i >= 0; i--) {
         medData = inData % 10;
         inData = inData / 10;
@@ -130,7 +131,7 @@ uint32_t ADC_Result(ADC_HandleTypeDef* hadc, uint32_t ch)
 {
     ADC_ChannelConfTypeDef sConfig;
     uint32_t adcResult = 0;
-    int count = 1000;
+    int count = ADC_SAMPLE_COUNT_TR;
 
     sConfig.Channel = ch;
     sConfig.Rank = ADC_REGULAR_RANK_1;
@@ -139,7 +140,7 @@ uint32_t ADC_Result(ADC_HandleTypeDef* hadc, uint32_t ch)
 
     for (int i = 0; i < count; i++) {
         HAL_ADC_Start(hadc);
-        HAL_ADC_PollForConversion(hadc, 100);
+        HAL_ADC_PollForConversion(hadc, ADC_TIMEOUT_MS);
         adcResult += HAL_ADC_GetValue(hadc);
     }
     adcResult = adcResult / count;
@@ -184,13 +185,13 @@ void initManagePressHeatingSys(StManagePressHeatingSys* st,
     st->GPIO_Pin = GPIO_Pin;
     st->previousPress = 0;
     st->timePreviousPress = 0;
-    st->minBarPerSecond = 0.05;
-    st->lagMinBerPerSecondError = 1000; // one second (in ms)
-    st->maxPressPoint = 2;
-    st->minPressPoint = 1;
-    st->maxVolt = 4.5;
-    st->minVolt = 0.5;
-    st->dVolt = 0.05;
+    st->minBarPerSecond = PRESSURE_MIN_BAR_PER_SEC;
+    st->lagMinBerPerSecondError = PRESSURE_ERROR_LAG_MS; // one second (in ms)
+    st->maxPressPoint = PRESSURE_MAX_POINT;
+    st->minPressPoint = PRESSURE_MIN_POINT;
+    st->maxVolt = PRESSURE_VOLT_MAX;
+    st->minVolt = PRESSURE_VOLT_MIN;
+    st->dVolt = PRESSURE_VOLT_DELTA;
     st->error = 0;
     st->pomp_on = 0;
 }
@@ -222,7 +223,7 @@ void measManagePressHeatingSys(StManagePressHeatingSys* st, uint32_t adc_volt,
     float Ut;
     float pmavg;
     uint32_t dt;
-    Ut = Rt / 4095 * 3.3 * 1.4751;
+    Ut = Rt / VOLT_DIV_4095_DIV * PRESSURE_REF_VOLT * PRESSURE_SCALE;
     if (Ut > (st->maxVolt + st->dVolt)) {
         st->error |= ERROR_PRESS_MET_OUT_OF_VOLT;
         return;
@@ -233,12 +234,12 @@ void measManagePressHeatingSys(StManagePressHeatingSys* st, uint32_t adc_volt,
     }
     st->error &= (~ERROR_PRESS_MET_OUT_OF_VOLT & ~ERROR_WIRE_BREAK);
 
-    pmavg = (Ut * 50 - 25) / 14.5038;
+    pmavg = (Ut * PRESSURE_MULT - PRESSURE_OFFSET) / PRESSURE_DIV;
     if (st->pomp_on) {
         if ((time < st->timePreviousPress)) {
             dt = (0xFFFFFFFF - st->timePreviousPress) + time;
         }
-        st->barPerSecond = (pmavg - st->previousPress) / (dt / 1000.0);
+        st->barPerSecond = (pmavg - st->previousPress) / (dt / (float)FREERTOS_TICK_RATE_HZ);
         if (st->barPerSecond < st->minBarPerSecond) {
             if (time > (st->timeOnPomp + st->lagMinBerPerSecondError)) {
                 st->error |= ERROR_PRESS_MET_OUT_OF_BAR_PER_SECOND;

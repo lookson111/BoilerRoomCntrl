@@ -41,6 +41,7 @@ typedef struct
     uint8_t time_tmp_second;
     uint8_t time_tmp_day;
     uint8_t time_tmp_month;
+    uint8_t time_tmp_year;
 } stDispMenu;
 
 extern stDispMenu dm;
