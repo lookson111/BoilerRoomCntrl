@@ -20,11 +20,11 @@ Embedded HVAC/heat management system for monitoring and controlling a heating sy
 | USART3 | PB10(TX), PB11(RX), PB2(RE/DE) | RS-485 Modbus RTU (57600 baud) |
 | I2C1 | PB6(SCL), PB7(SDA) | External EEPROM (24C-series) |
 | TIM1 | — | FreeRTOS timebase |
-| TIM2 | — | Button debouncing |
+| TIM2 | — | (available, unused) |
 | TIM3 | PA6 | PWM output (boiler modulation) |
 | TIM4 | — | Modbus inter-character/frame timing |
 | RTC | — | Real-time clock (LSE 32.768 kHz) |
-| EXTI | PA7, PA10, PA11, PA12 | Water flow meter + 3 navigation buttons |
+| EXTI | PA7, PA10, PA11, PA12 | Water flow meter + quadrature encoder (PA10/PA11) + enter button (PA12) |
 
 ### Pin Mapping
 
@@ -40,9 +40,9 @@ Embedded HVAC/heat management system for monitoring and controlling a heating sy
 | PA7 | Wtr_flow_met | Water flow meter (EXTI) |
 | PA8 | DISP_RES | Display reset |
 | PA9 | DISP_BLK | Display backlight |
-| PA10 | ER11_LINE1 | Left button (EXTI) |
-| PA11 | ER11_LINE2 | Right button (EXTI) |
-| PA12 | ER11_BUTTON | Enter button (EXTI) |
+| PA10 | ER11_LINE1 | Quadrature encoder channel A (EXTI, both edges) |
+| PA11 | ER11_LINE2 | Quadrature encoder channel B (EXTI, both edges) |
+| PA12 | ER11_BUTTON | Enter button (EXTI, rising edge) |
 | PA15 | WtoHS | Pump heating system relay |
 | PB0 | PM_2 | ADC pressure sensor 2 |
 | PB1 | PM_1 | ADC pressure sensor 1 |
@@ -122,7 +122,7 @@ Six new setpoints items were added for RTC time configuration:
 - **Месяц** (Month, 1–12)
 - **Год** (Year, 0–99)
 
-Editing flow: Press Enter on "Часы" to load current RTC time into temp vars, then use Left/Right buttons to increment/decrement any value, and press Enter on "Часы" again to write to RTC. A new `ITTIME` type distinguishes the entry-point item from regular `ITINT` items.
+Editing flow: Press Enter on "Часы" to load current RTC time into temp vars, then rotate the quadrature encoder to increment/decrement any value, and press Enter on "Часы" again to write to RTC. A new `ITTIME` type distinguishes the entry-point item from regular `ITINT` items.
 
 ## Build (Linux)
 
@@ -172,6 +172,7 @@ The following changes were made to ensure compatibility with modern ARM GCC (13.
 1. **Two display drivers:** Both `ili9341.c` and `disp_spi.c` (ST7789VW) exist. Active code uses `ili9341.c`.
 2. **Touch panel not fully configured:** SPI1 for XPT2046 is referenced but not configured in `.ioc`.
 3. **ITFLOAT editing stub:** The value increment/decrement logic for ITFLOAT items is still a placeholder (empty bodies in the edit loop). ITINT items for time editing are fully implemented.
+4. **Quadrature encoder navigation:** PA10/PA11 form a quadrature rotary encoder (EXTI on both edges, FSM decoding in `stm32f1xx_it.c`). GPIO_PULLUP is enabled. The FSM (Ben Buxton / Bourns AN-14) naturally filters bounce and produces 1 count per detent.
 
 ## Branches
 

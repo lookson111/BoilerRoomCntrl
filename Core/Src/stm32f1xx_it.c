@@ -52,10 +52,22 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-volatile uint8_t b_ER1 = 0;
-volatile uint8_t b_ER2 = 0;
-volatile uint8_t b_rt = 0;
-volatile uint8_t b_lt = 0;
+// Quadrature encoder FSM (Ben Buxton / Bourns AN-14)
+// Only counts COMPLETE cycles → naturally filters bounce, 1 count per detent
+// Works with ANY detent position (00, 01, 10, or 11)
+static volatile uint8_t enc_state = 0;
+#define DIR_CW  0x10
+#define DIR_CCW 0x20
+static const uint8_t ttable[7][4] = {
+    //         00       10       01       11
+    {0,        2,       4,       0},   // 0: R_START
+    {0|DIR_CW, 0,       1,       3},   // 1: R_CW_FINAL
+    {0,        2,       0,       3},   // 2: R_CW_BEGIN
+    {0,        2,       1,       3},   // 3: R_CW_NEXT
+    {0,        0,       4,       6},   // 4: R_CCW_BEGIN
+    {0|DIR_CCW,0,       5,       5},   // 5: R_CCW_FINAL
+    {0,        5,       4,       6},   // 6: R_CCW_NEXT
+};
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -68,7 +80,6 @@ extern TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN EV */
 extern int count_lt;
-extern int count_rt;
 extern int8_t enterButton;
 /* USER CODE END EV */
 
@@ -219,23 +230,6 @@ void TIM2_IRQHandler(void)
         // Clear the update interrupt flag
         TIM2->SR &= ~TIM_SR_UIF;
 
-        // Handle button presses - debounce sampling
-        b_ER1 = HAL_GPIO_ReadPin(ER11_LINE1_GPIO_Port, ER11_LINE1_Pin);
-        b_ER2 = HAL_GPIO_ReadPin(ER11_LINE2_GPIO_Port, ER11_LINE2_Pin);
-
-        // Check which button is pressed after debounce delay
-        if (b_ER1 == GPIO_PIN_SET) {
-            // Left button (LINE1) confirmed pressed
-            count_lt++;
-        } else if (b_ER2 == GPIO_PIN_SET) {
-            // Right button (LINE2) confirmed pressed
-            count_lt--;
-        }
-
-        // Clear latches
-        b_lt = 0;
-        b_rt = 0;
-
         // Stop TIM2 (one-shot mode)
         TIM2->CR1 &= ~TIM_CR1_CEN;
         TIM2->DIER &= ~TIM_DIER_UIE;
@@ -314,35 +308,28 @@ void USART3_IRQHandler(void)
 void EXTI15_10_IRQHandler(void)
 {
     /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+    if (EXTI->PR & ((1 << 10) | (1 << 11))) {
+        EXTI->PR |= (1 << 10);
+        EXTI->PR |= (1 << 11);
+
+        uint8_t ab = (uint8_t)HAL_GPIO_ReadPin(ER11_LINE1_GPIO_Port, ER11_LINE1_Pin) |
+                     ((uint8_t)HAL_GPIO_ReadPin(ER11_LINE2_GPIO_Port, ER11_LINE2_Pin) << 1);
+
+        uint8_t result = ttable[enc_state][ab];
+        enc_state = result & 0x0F;
+
+        if (result & DIR_CW) {
+            count_lt++;
+        } else if (result & DIR_CCW) {
+            count_lt--;
+        }
+    }
+
     // EXTI12: Enter button
     if (EXTI->PR & (1 << 12)) {
-        EXTI->PR |= (1 << 12); // Clear EXTI12 flag
+        EXTI->PR |= (1 << 12);
         if (HAL_GPIO_ReadPin(ER11_BUTTON_GPIO_Port, ER11_BUTTON_Pin)) {
             enterButton = 1;
-        }
-    }
-
-    // EXTI11: LINE2 (Right) button - start debounce timer
-    if (EXTI->PR & (1 << 11)) {
-        EXTI->PR |= (1 << 11); // Clear EXTI11 flag
-        // Only start timer if not already running
-        if (!(TIM2->CR1 & TIM_CR1_CEN)) {
-            TIM2->ARR = 2000; // ~55us debounce at 72MHz
-            TIM2->CNT = 0;
-            TIM2->DIER |= TIM_DIER_UIE;
-            TIM2->CR1 |= TIM_CR1_CEN;
-        }
-    }
-
-    // EXTI10: LINE1 (Left) button - start debounce timer
-    if (EXTI->PR & (1 << 10)) {
-        EXTI->PR |= (1 << 10); // Clear EXTI10 flag
-        // Only start timer if not already running
-        if (!(TIM2->CR1 & TIM_CR1_CEN)) {
-            TIM2->ARR = 2000; // ~55us debounce at 72MHz
-            TIM2->CNT = 0;
-            TIM2->DIER |= TIM_DIER_UIE;
-            TIM2->CR1 |= TIM_CR1_CEN;
         }
     }
 
