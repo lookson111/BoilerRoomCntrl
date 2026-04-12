@@ -18,7 +18,6 @@
 //extern const unsigned int *TR_temper_volt_arr;
 //static const unsigned int tTR_temper_volt_arr [151][2];
 
-
 static const unsigned int tTR_temper_volt_arr[151] = {
     133500000, 125672000, 118350000, 111498000, 105084000, 99077300, 93446900, 88175000, 83229600,
     78590900,  74238400,  70152700,  66316200,  62712200,  59325400, 56141600, 53147500, 50330700,

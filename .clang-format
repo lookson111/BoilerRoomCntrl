@@ -11,7 +11,7 @@ BasedOnStyle:    LLVM
 IndentWidth:     4
 TabWidth:        4
 UseTab:          Never
-ColumnLimit:     100
+ColumnLimit:     80     
 ContinuationIndentWidth: 4
 
 # Brace style (K&R: opening brace on same line for functions, structs, etc.)
