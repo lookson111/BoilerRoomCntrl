@@ -71,9 +71,6 @@ bool ILI9341_TouchGetCoordinates(uint16_t* x, uint16_t* y)
     if (raw_y > ILI9341_TOUCH_MAX_RAW_Y)
         raw_y = ILI9341_TOUCH_MAX_RAW_Y;
 
-    // Uncomment this line to calibrate touchscreen:
-    // UART_Printf("raw_x = %d, raw_y = %d\r\n", x, y);
-
     *x = (raw_x - ILI9341_TOUCH_MIN_RAW_X) * ILI9341_TOUCH_SCALE_X /
          (ILI9341_TOUCH_MAX_RAW_X - ILI9341_TOUCH_MIN_RAW_X);
     *y = (raw_y - ILI9341_TOUCH_MIN_RAW_Y) * ILI9341_TOUCH_SCALE_Y /

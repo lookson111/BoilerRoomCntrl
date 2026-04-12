@@ -25,9 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "../ili9341/fonts.h"
 #include "../ili9341/ili9341.h"
-#include "../ili9341/testimg.h"
 #include "DHT.h"
-//#include "stm32f10x_gpio.h"
 #include <string.h>
 #include "../app/hal_utils.h"
 #include "../app/lcd_ui.h"
@@ -752,7 +750,6 @@ void StartDefaultTask(void const* argument)
 {
     /* USER CODE BEGIN 5 */
     osDelay(900);
-    //uint16_t i = 0;
     const char wmsg[] = "Some data";
     char rmsg[sizeof(wmsg)];
     uint16_t devAddr = (0x50 << 1);
@@ -762,9 +759,6 @@ void StartDefaultTask(void const* argument)
 
     HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
     modbus_configure(&modBusData, &huart3, slaveID, HOLDING_REGS_SIZE_BR, holdingRegs);
-    //TIM4->ARR = modBusData.T1_5;
-    //HAL_UART_Receive_IT(&huart3, (uint8_t*)buff, 3);
-    //__HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
     RCC->APB1ENR |= RCC_APB1ENR_USART3EN;                       // USART3 Clock ON
     USART3->CR1 |= USART_CR1_UE | USART_CR1_TE | USART_CR1_RE | // USART1 ON, TX ON, RX ON
                    USART_CR1_RXNEIE;                            // RXNE Int ON
@@ -807,15 +801,10 @@ void StartSensReadTask(void const* argument)
     float RI;
     float RI_1;
     uint32_t start_time = millis();
-    uint32_t update_time = 1000; // милисекунды
-                                 //  uint32_t st_time;
-                                 //  uint32_t stop_time;
-                                 //  uint32_t m_time;
-                                 //  float r_time;
+    uint32_t update_time = 1000;
     char hum_mes = 1;
     char tmp_mes = 1;
     initManagePressHeatingSys(&managePressHeatingSys, PM_1_GPIO_Port, PM_1_Pin);
-    //initManagePressHeatingSys(&managePressHeatingSys);
 
 
     /* Infinite loop */

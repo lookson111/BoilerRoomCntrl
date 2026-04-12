@@ -67,8 +67,6 @@ typedef struct
     uint8_t available;
     uint8_t buffer;
     uint8_t bufferSize;
-    //GPIO_TypeDef* TxEnable_Port;
-    //uint16_t TxEnablePin;
     uint16_t errorCount;
     uint16_t T1_5; // inter character time out
     uint16_t T3_5; // frame delay
@@ -79,8 +77,6 @@ typedef struct
 // function definitions
 
 void modbus_configure(ModBusTypeDef* modBusData, UART_HandleTypeDef* _uart, uint8_t _slaveID,
-                      //GPIO_TypeDef *_TxEnable_Port,
-                      //uint16_t _TxEnablePin,
                       uint16_t _holdingRegsSize, uint16_t* _regs);
 void modbus_update_comms(ModBusTypeDef* modBusData, uint32_t baud);
 uint16_t modbus_update(ModBusTypeDef* modBusData);

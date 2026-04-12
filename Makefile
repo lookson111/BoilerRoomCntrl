@@ -75,7 +75,6 @@ C_SRCS := \
   Core/ili9341/fonts.c \
   Core/modbus/SimpleModbusSlave.c \
   Core/app/lcd_ui.c \
-  Core/app/thermistor_table.c \
   Core/app/hal_utils.c \
   Core/app/menu_strings.c \
   Core/app/dwt_timer.c \

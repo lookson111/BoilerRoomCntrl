@@ -6,20 +6,14 @@
 
 
 void modbus_configure(ModBusTypeDef* modBusData, UART_HandleTypeDef* _uart, uint8_t _slaveID,
-                      //GPIO_TypeDef *_TxEnable_Port,
-                      //uint16_t _TxEnablePin,
                       uint16_t _holdingRegsSize, uint16_t* _regs)
 {
     modBusData->uart = _uart;
     modbus_update_comms(modBusData, _uart->Init.BaudRate);
     modBusData->holdingRegsSize = _holdingRegsSize;
     modBusData->regs = _regs;
-    //modBusData->TxEnable_Port = _TxEnable_Port;
-    //modBusData->TxEnablePin = _TxEnablePin;
     modBusData->slaveID = _slaveID;
-    //pinMode(TxEnablePin, OUTPUT);
-    //digitalWrite(TxEnablePin, LOW);
-    modBusData->errorCount = 0; // initialize errorCount
+    modBusData->errorCount = 0;
     modBusData->available = 0;
 }
 
@@ -52,37 +46,7 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
         modBusData->available = 0;
 
         uint8_t overflow = 0;
-        //
-        //	  while ((*ModbusPort).available())
-        //	  {
-        //
-        //		  // If more bytes is received than the BUFFER_SIZE the overflow flag will be set and the
-        //		  // serial buffer will be red untill all the data is cleared from the receive buffer.
-        //		  if (overflow)
-        //		  	HAL_UART_Receive(&huart3, frame, 1, 1);
-        //			  //(*ModbusPort).read();
-        //		  else
-        //		  {
-        //			  if (buffer == BUFFER_SIZE)
-        //				  overflow = 1;
-        //			  HAL_UART_Receive(&huart3, &frame[buffer], 1, 1000);
-        //			  //frame[buffer] = (*ModbusPort).read();
-        //			  buffer++;
-        //		  }
-        //		  delayMicroseconds(T1_5); // inter character time out
-        //	  }
 
-        //	Serial.println();
-        //	for (int i = 0; i < buffer; i++)
-        //	{
-        //		Serial.print("Frame1[");
-        //		Serial.print(i);
-        //		Serial.print("] = ");
-        //		Serial.println(frame[i]);
-        //	}
-        // If an overflow occurred increment the errorCount
-        // variable and return to the main sketch without
-        // responding to the request i.e. force a timeout
         if (overflow)
             return modBusData->errorCount++;
 
@@ -147,17 +111,8 @@ uint16_t modbus_update(ModBusTypeDef* modBusData)
 
                                 crc16 = calculateCRC(modBusData, responseFrameSize - 2);
                                 modBusData->frame[responseFrameSize - 2] =
-                                    crc16 >> 8; // split crc into 2 bytes
+                                    crc16 >> 8;
                                 modBusData->frame[responseFrameSize - 1] = crc16 & 0xFF;
-
-                                // Serial.println();
-                                // for (int i = 0; i < responseFrameSize; i++)
-                                // {
-                                // Serial.print("Frame2[");
-                                // Serial.print(i);
-                                // Serial.print("] = ");
-                                // Serial.println(frame[i]);
-                                // }
 
                                 sendPacket(modBusData, responseFrameSize);
                             } else
@@ -259,34 +214,12 @@ uint16_t calculateCRC(ModBusTypeDef* modBusData, uint8_t bufferSize)
 
 void sendPacket(ModBusTypeDef* modBusData, uint8_t bufferSize)
 {
-    // Serial.print("bufferSize = ");
-    // Serial.println(bufferSize);
-    //digitalWrite(TxEnablePin, HIGH);
     HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_SET);
 
-    //  modBusData->buffer = 0;
-    //  modBusData->bufferSize = bufferSize;
-    //  USART3->DR = (uint8_t*)modBusData->frame[modBusData->buffer];
-    ////	for (int i = 0; i < bufferSize; i++)
-    ////	 {
-    ////		 Serial.print("Frameout = ");
-    ////		 Serial.println(frame[i]);
-    ////	 }
-    //	// delay(2000);
-    //  //for (uint8_t i = 0; i < bufferSize; i++)
-    //      //(*ModbusPort).write(frame[i]);
-    HAL_UART_Transmit(modBusData->uart, (uint8_t*)modBusData->frame, bufferSize, 10); //bufferSize);
+    HAL_UART_Transmit(modBusData->uart, (uint8_t*)modBusData->frame, bufferSize, 10);
     fl_transmit_485 = 1;
     TIM4->ARR = modBusData->T1_5;
     TIM4->CNT = 0;
     TIM4->DIER |= TIM_DIER_UIE;
     TIM4->CR1 |= TIM_CR1_CEN;
-    //
-    //	//(*ModbusPort).flush();
-    //
-    //	// allow a frame delay to indicate end of transmission
-    //	delayMicroseconds(T3_5);
-    //
-    //	HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
-    //digitalWrite(TxEnablePin, LOW);
 }

@@ -38,7 +38,6 @@ void begin(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
     _lastreadtime = 0;
 }
 
-//boolean S == Scale.  True == Farenheit; False == Celcius
 float readTemperature(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin, char S)
 {
     float f;
@@ -66,7 +65,6 @@ float readTemperature(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin, char S)
                 return f;
         }
     }
-    //Serial.print("Read fail");
     return NAN;
 }
 
@@ -94,7 +92,6 @@ float readHumidity(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
                 return f;
         }
     }
-    //Serial.print("Read fail");
     return NAN;
 }
 
@@ -107,8 +104,6 @@ char read(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
     _count = 10;
     unsigned long currenttime;
 
-    //extern uint32_t counter_glob;
-
     // pull the pin high and wait 250 milliseconds
     HAL_GPIO_WritePin(DHT22_2_GPIO_Port, DHT22_2_Pin, GPIO_PIN_SET);
     osDelay(250);
@@ -119,8 +114,6 @@ char read(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
         _lastreadtime = 0;
     }
     if (!firstreading && ((currenttime - _lastreadtime) < 2000)) {
-        //return TRUE; // return last correct measurement
-        //delay(2000 - (currenttime - _lastreadtime));
     }
     firstreading = FALSE;
     /*
@@ -186,29 +179,3 @@ char read(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
 
     return FALSE;
 }
-
-/*
-void DWT_Init(void)
-{
-    //разрешаем использовать счётчик
-    SCB_DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-    //обнуляем значение счётного регистра
-    DWT_CYCCNT  = 0;
-    //запускаем счётчик
-    DWT_CONTROL |= DWT_CTRL_CYCCNTENA_Msk;
-}
-
-static __inline uint32_t delta(uint32_t t0, uint32_t t1)
-{
-    return (t1 - t0);
-}
-void delay_us(uint32_t us)
-{
-      uint32_t t0 =  DWT->CYCCNT;
-      uint32_t us_count_tic =  us * (SystemCoreClock/1000000);
-      while (delta(t0, DWT->CYCCNT) < us_count_tic) ;
-}
-
-uint32_t millis() {
-	return DWT->CYCCNT;
-}*/

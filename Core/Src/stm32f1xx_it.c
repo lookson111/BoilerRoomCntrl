@@ -287,7 +287,7 @@ void USART3_IRQHandler(void)
     /* USER CODE BEGIN USART3_IRQn 0 */
     //если причина прерывания регистор приема не пуст
     if ((USART3->SR & USART_SR_RXNE) != 0) {
-        modBusData.frame[cout_rcvUART] = USART3->DR; //прочитать принятый байт
+        modBusData.frame[cout_rcvUART] = USART3->DR;
         cout_rcvUART++;
         if (cout_rcvUART >= 32) {
             cout_rcvUART = 0;
@@ -299,22 +299,7 @@ void USART3_IRQHandler(void)
         TIM4->DIER |= TIM_DIER_UIE;
         TIM4->CR1 |= TIM_CR1_CEN;
     }
-    //если причина прерывания  окончание передачи
     if ((USART3->SR & USART_SR_TC) != 0) {
-        //  	if (modBusData.buffer < modBusData.bufferSize) {
-        //  		USART3->DR = (uint8_t*)modBusData.frame[modBusData.buffer];
-        //  	}
-        //  	fl_transmit_485 = 1;
-        //  	RCC->APB1ENR	|= RCC_APB1ENR_USART3EN;				// USART3 Clock ON
-        //  	USART3->CR1 	|= USART_CR1_UE | USART_CR1_TE | USART_CR1_RE |		// USART1 ON, TX ON, RX ON
-        //  			     USART_CR1_RXNEIE;					// RXNE Int ON
-        //  	NVIC_EnableIRQ (USART3_IRQn);
-        //    USART3->SR ^= USART_SR_TC;         //очистить флаг
-        //  	TIM4->ARR = modBusData.T3_5;
-        //  	TIM4->CNT = 0;
-        //  	TIM4->DIER |= TIM_DIER_UIE;
-        //  	TIM4->CR1 |= TIM_CR1_CEN;
-        //.....                               //что-то делаем
     }
     /* USER CODE END USART3_IRQn 0 */
     HAL_UART_IRQHandler(&huart3);

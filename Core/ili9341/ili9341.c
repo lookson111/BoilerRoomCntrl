@@ -222,12 +222,8 @@ void ILI9341_Init()
     // MADCTL
     ILI9341_WriteCommand(0x36);
     {
-        //data[0] = 0x28;
         uint8_t data[] = {ILI9341_ROTATION};
-        //uint8_t data[] = { 0x28 };
         ILI9341_WriteData(data, sizeof(data));
-        //ILI9341_WIDTH = 320;
-        //ILI9341_HEIGHT = 240;
     }
 
     ILI9341_Unselect();

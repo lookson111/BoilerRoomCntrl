@@ -7,8 +7,6 @@
 
 #include "disp_spi.h"
 
-
-//extern RNG_HandleTypeDef hrng;
 uint16_t ST7789VW_WIDTH;
 uint16_t ST7789VW_HEIGHT;
 
@@ -203,7 +201,7 @@ static void ST7789VW_SetAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16
 
     // write to RAM
     ST7789VW_SendCommand(0x2C); // RAMWR
-} //-------------------------------------------------------------------
+}
 void ST7789VW_FillRect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color)
 {
     if ((x1 >= ST7789VW_WIDTH) || (y1 >= ST7789VW_HEIGHT) || (x2 >= ST7789VW_WIDTH) ||
@@ -220,14 +218,12 @@ void ST7789VW_FillRect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint1
         HAL_SPI_Transmit(&hspi2, data, 2, HAL_MAX_DELAY);
     }
 }
-//-------------------------------------------------------------------
 
 //-Ниже добавим функцию заливки всего экрана определённым цветом
 void ST7789VW_FillScreen(uint16_t color)
 {
     ST7789VW_FillRect(0, 0, ST7789VW_WIDTH - 1, ST7789VW_HEIGHT - 1, color);
 }
-//-------------------------------------------------------------------
 
 
 //

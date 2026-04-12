@@ -13,7 +13,6 @@ void fltochar(char* tmpl, float fltdata)
     int medData;
     int k;
     int bool = 0;
-    //char chData[6];
     for (int i = 0; i < 6; i++) {
         tmpl[i] = ' ';
     }
@@ -77,22 +76,13 @@ void fltochar(char* tmpl, float fltdata)
 void inttochar(char* tmpl, uint32_t intdata)
 {
     uint32_t inData = intdata;
-    //int intData;
     int medData;
     int k;
     int bool = 0;
-    //char chData[6];
     for (int i = 0; i < 6; i++) {
         tmpl[i] = ' ';
     }
     tmpl[6] = 0x00;
-
-    //	if ((inData > 10000) || (inData < 0)) {
-    //		return;
-    //	}
-    //	if ((inData < 100) && (inData >= 0)) {
-    //		inData = 0;
-    //	}
     for (int i = 5; i >= 0; i--) {
         medData = inData % 10;
         inData = inData / 10;
@@ -144,7 +134,7 @@ uint32_t ADC_Result(ADC_HandleTypeDef* hadc, uint32_t ch)
 
     sConfig.Channel = ch;
     sConfig.Rank = ADC_REGULAR_RANK_1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_71CYCLES_5; // ADC_SAMPLETIME_13CYCLES_5;
+    sConfig.SamplingTime = ADC_SAMPLETIME_71CYCLES_5;
     HAL_ADC_ConfigChannel(hadc, &sConfig);
 
     for (int i = 0; i < count; i++) {

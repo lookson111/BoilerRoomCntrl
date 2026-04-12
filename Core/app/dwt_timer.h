@@ -9,7 +9,6 @@
 #define INC_DWT_TIMER_H_
 
 #include "main.h"
-//#include "DHT.h"
 #include "FreeRTOS.h"
 #include "cmsis_os.h"
 #include "task.h"

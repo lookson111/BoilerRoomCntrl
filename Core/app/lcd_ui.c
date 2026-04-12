@@ -72,8 +72,6 @@ short disp_curs_view(stDispMenu* dm, FontDef font)
 {
     if (count_lt == 0)
         return 0;
-    // сначала удалаяем указатель в меню
-    //disp_znak[0] = ' ';
     if (dm->count == 0) {
         if (dm->menu_data) {
             ILI9341_WriteString(0, font.height * dm->count, &disp_znak[2], font, ILI9341_WHITE,
@@ -124,7 +122,6 @@ short disp_curs_view(stDispMenu* dm, FontDef font)
                     dm->diap_min = 0;
                     dm->count = dm->diap_max;
                 }
-                //dm->count = lines_max;
                 dm->line = dm->diap_max - 1;
                 dm->redrawDispMenu = 1;
             }
@@ -136,8 +133,6 @@ short disp_curs_view(stDispMenu* dm, FontDef font)
             dm->redrawDispMenu = 1;
         }
     }
-    // показываем курсор
-    //disp_znak[0] = '>';
     if (dm->count == 0) {
         if (dm->menu_data) {
             ILI9341_WriteString(0, font.height * dm->count, &disp_znak[0], font, ILI9341_WHITE,

@@ -15,9 +15,6 @@
 #include "menu_strings.h"
 #include "stm32f1xx_hal.h"
 
-//char strMenuValsData[menuCountElements][7];
-//char strMenuValsPoint[menuPCountElements][7];
-
 typedef struct
 {
     char disp_znak[2];
