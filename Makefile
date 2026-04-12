@@ -1,5 +1,5 @@
 # Standalone Makefile for BoilerRoomCntrl
-# Build on Linux with arm-none-eabi-gcc
+# Build on Linux with arm-none-eabi-g++
 
 # Build configuration: Debug or Release
 # Usage: make BUILD_TYPE=Debug   (default)
@@ -10,6 +10,7 @@ BUILD_TYPE ?= Debug
 BUILD_DIR := $(BUILD_TYPE)
 
 TARGET   := $(BUILD_DIR)/BoilerRoomCntrl.elf
+CXX      := arm-none-eabi-g++
 CC       := arm-none-eabi-gcc
 OBJCOPY  := arm-none-eabi-objcopy
 SIZE     := arm-none-eabi-size
@@ -19,16 +20,23 @@ CPU      := -mcpu=cortex-m3
 FPU      :=
 FLOAT-ABI := -mfloat-abi=soft
 THUMB    := -mthumb
+CXXSTD   := -std=gnu++17
 CSTD     := -std=gnu11
 
 # Build-type-specific flags
 ifeq ($(BUILD_TYPE),Debug)
   OPT       := -O0
+  CXXFLAGS  := $(CPU) $(CXXSTD) -g3 $(FLOAT-ABI) $(THUMB) $(OPT)
+  CXXFLAGS  += -DUSE_HAL_DRIVER -DSTM32F103xB -DDEBUG
+  CXXFLAGS  += -Wall -fstack-usage -fno-rtti -fno-exceptions
   CFLAGS    := $(CPU) $(CSTD) -g3 $(FLOAT-ABI) $(THUMB) $(OPT)
   CFLAGS    += -DUSE_HAL_DRIVER -DSTM32F103xB -DDEBUG
   CFLAGS    += -Wall -fstack-usage
 else ifeq ($(BUILD_TYPE),Release)
   OPT       := -Os
+  CXXFLAGS  := $(CPU) $(CXXSTD) -g0 $(FLOAT-ABI) $(THUMB) $(OPT)
+  CXXFLAGS  += -DUSE_HAL_DRIVER -DSTM32F103xB -DNDEBUG
+  CXXFLAGS  += -Wall -fstack-usage -fno-rtti -fno-exceptions
   CFLAGS    := $(CPU) $(CSTD) -g0 $(FLOAT-ABI) $(THUMB) $(OPT)
   CFLAGS    += -DUSE_HAL_DRIVER -DSTM32F103xB -DNDEBUG
   CFLAGS    += -Wall -fstack-usage
@@ -36,8 +44,10 @@ else
   $(error Unknown BUILD_TYPE: $(BUILD_TYPE). Use Debug or Release)
 endif
 
-CFLAGS    += -ffunction-sections -fdata-sections
-CFLAGS    += -MMD -MP -MP
+CXXFLAGS += -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions
+CXXFLAGS += -MMD -MP -MP
+CFLAGS   += -ffunction-sections -fdata-sections
+CFLAGS   += -MMD -MP -MP
 
 # Include paths
 INCLUDES := \
@@ -54,29 +64,23 @@ INCLUDES := \
 # Linker flags
 LDSCRIPT := STM32F103CBTX_FLASH.ld
 LDFLAGS  := $(CPU) $(FLOAT-ABI) $(THUMB)
-LDFLAGS  += -T$(LDSCRIPT)
+LDFLAGS  += -nostdlib++ -T$(LDSCRIPT)
 LDFLAGS  += -Wl,--gc-sections
 LDFLAGS  += -Wl,--print-memory-usage
 LDFLAGS  += -Wl,-Map=$(BUILD_DIR)/BoilerRoomCntrl.map
-LDFLAGS  += --specs=nano.specs -lc -lm
+LDFLAGS  += -lc -lm
 
 # Source files
 C_SRCS := \
-  Core/Src/main.c \
+  Core/Src/syscalls.c \
   Core/Src/stm32f1xx_hal_msp.c \
   Core/Src/stm32f1xx_hal_timebase_tim.c \
-  Core/Src/stm32f1xx_it.c \
   Core/Src/freertos.c \
-  Core/Src/DHT.c \
   Core/Src/system_stm32f1xx.c \
   Core/ili9341/ili9341.c \
   Core/ili9341/ili9341_touch.c \
   Core/ili9341/fonts.c \
   Core/modbus/SimpleModbusSlave.c \
-  Core/app/lcd_ui.c \
-  Core/app/hal_utils.c \
-  Core/app/menu_strings.c \
-  Core/app/dwt_timer.c \
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c \
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c \
@@ -108,11 +112,21 @@ C_SRCS := \
   Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c \
   Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
 
+CXX_SRCS := \
+  Core/Src/main.cpp \
+  Core/Src/stm32f1xx_it.cpp \
+  Core/Src/DHT.cpp \
+  Core/app/lcd_ui.cpp \
+  Core/app/hal_utils.cpp \
+  Core/app/menu_strings.cpp \
+  Core/app/dwt_timer.cpp
+
 ASM_SRCS := \
   Core/Startup/startup_stm32f103cbtx.s
 
 # Object files — redirected to build directory
 OBJS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(C_SRCS)) \
+        $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(CXX_SRCS)) \
         $(patsubst %.s,$(BUILD_DIR)/%.o,$(ASM_SRCS))
 DEPS := $(OBJS:.o=.d)
 
@@ -126,7 +140,7 @@ create_build_dir:
 # Link
 $(TARGET): $(OBJS)
 	@echo "Linking $@"
-	$(CC) $(LDFLAGS) $^ -o $@
+	$(CXX) $(LDFLAGS) $^ -o $@
 
 # Generate .bin
 %.bin: %.elf
@@ -143,6 +157,12 @@ $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	@echo "Compiling $<"
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# Compile C++
+$(BUILD_DIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	@echo "Compiling $<"
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # Assemble
 $(BUILD_DIR)/%.o: %.s

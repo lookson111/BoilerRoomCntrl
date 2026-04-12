@@ -1,6 +1,10 @@
 #ifndef SIMPLE_MODBUS_SLAVE_H
 #define SIMPLE_MODBUS_SLAVE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // SimpleModbusSlaveV9
 
 /*
@@ -85,5 +89,9 @@ uint16_t modbus_update(ModBusTypeDef* modBusData);
 void exceptionResponse(ModBusTypeDef* modBusData, uint8_t exception);
 uint16_t calculateCRC(ModBusTypeDef* modBusData, uint8_t bufferSize);
 void sendPacket(ModBusTypeDef* modBusData, uint8_t bufferSize);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

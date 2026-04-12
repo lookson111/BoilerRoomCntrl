@@ -109,7 +109,7 @@ char read(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
     HAL_GPIO_WritePin(DHT22_2_GPIO_Port, DHT22_2_Pin, GPIO_PIN_SET);
     osDelay(DHT22_INIT_DELAY_MS);
 
-    currenttime = millis();
+    currenttime = dwt_timer::millis();
     if (currenttime < _lastreadtime) {
         // ie there was a rollover
         _lastreadtime = 0;
@@ -121,7 +121,7 @@ char read(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
     Serial.print("Currtime: "); Serial.print(currenttime);
     Serial.print(" Lasttime: "); Serial.print(_lastreadtime);
   */
-    _lastreadtime = millis();
+    _lastreadtime = dwt_timer::millis();
 
     data[0] = data[1] = data[2] = data[3] = data[4] = 0;
 
@@ -132,15 +132,15 @@ char read(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
     //cli();
     taskENTER_CRITICAL();
     HAL_GPIO_WritePin(DHT22_2_GPIO_Port, DHT22_2_Pin, GPIO_PIN_SET);
-    delay_us(DHT22_PULL_HIGH_DELAY_US);
+    dwt_timer::delay_us(DHT22_PULL_HIGH_DELAY_US);
     pinMode(GPIO_Port, GPIO_Pin, INPUT);
-    delay_us(DHT22_INPUT_SETUP_US);
+    dwt_timer::delay_us(DHT22_INPUT_SETUP_US);
     // read in timings
     for (i = 0; i < MAXTIMINGS; i++) {
         counter = 0;
         while (HAL_GPIO_ReadPin(DHT22_2_GPIO_Port, DHT22_2_Pin) == laststate) {
             counter++;
-            delay_us(1);
+            dwt_timer::delay_us(1);
             if (counter == DHT22_TIMEOUT_COUNT) {
                 break;
             }

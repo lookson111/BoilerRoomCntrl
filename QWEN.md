@@ -4,6 +4,8 @@
 
 Embedded HVAC/heat management system for monitoring and controlling a heating system. Reads multiple temperature, humidity, and pressure sensors, then controls pumps, valves, and a heating boiler. Features a touchscreen ILI9341 LCD UI for viewing sensor data and configuring setpoints.
 
+**Language:** C++17 (converted from C)
+
 ## Hardware
 
 - **MCU:** STM32F103CBT6 (Cortex-M3, 128KB Flash, 20KB RAM, 72 MHz)
@@ -166,8 +168,40 @@ The following changes were made to ensure compatibility with modern ARM GCC (13.
 3. **`main.c`**: Added actual variable definitions for all `extern` declarations
 4. **Makefile**: Created standalone Makefile (no longer depends on STM32CubeIDE-generated files)
 5. **Linker flags**: Removed `syscalls.c` and `sysmem.c` from build, using `libnosys` stubs instead
+6. **`syscalls.c`**: Added custom syscalls stubs (`_close`, `_lseek`, `_read`, `_write`, `_getpid`, `_kill`, `_sbrk`) to eliminate newlib linker warnings. Replaced `--specs=nosys.specs` with own implementations.
 
-## Known Issues / Notes
+## C++ Conversion (April 2026)
+
+This project has been converted from C to C++17 for improved type safety and maintainability:
+
+### Conversion Details
+
+1. **Compiler**: Changed from `arm-none-eabi-gcc` to `arm-none-eabi-g++`
+2. **Standard**: C++17 (`-std=gnu++17`)
+3. **Disabled features**: `-fno-rtti -fno-exceptions` (embedded systems optimization)
+4. **Constants**: Replaced `#define` with `constexpr` in typed namespaces:
+   - `Pressure::`, `ADC::`, `DHT22::`, `Modbus::`, `Time::`, `Menu::`, etc.
+5. **Enums**: Converted to `enum class` for type safety (e.g., `Menu::Type`)
+6. **Classes**: Converted C structs with functions to C++ classes:
+   - `AdcAverage` — ADC averaging with constructor and methods
+   - `ManagePressHeatingSys` — Pressure system management
+   - `DwtTimer` — Singleton DWT timer class
+   - DHT22 sensor class
+7. **Backward compatibility**: C libraries wrapped with `extern "C"`:
+   - STM32 HAL drivers
+   - FreeRTOS CMSIS-RTOS
+   - ILI9341 display driver
+   - SimpleModbusSlave
+8. **File extensions**: Renamed all custom `.c` files to `.cpp`
+
+### Build Statistics (Debug)
+
+- **Flash usage**: 63.7 KB / 128 KB (48.61%)
+- **RAM usage**: 14.9 KB / 20 KB (72.93%)
+- **Compiler warnings**: 0 warnings, 0 errors
+- **Hardware test**: PASS (24 seconds stable operation)
+
+### Known Issues / Notes
 
 1. **Two display drivers:** Both `ili9341.c` and `disp_spi.c` (ST7789VW) exist. Active code uses `ili9341.c`.
 2. **Touch panel not fully configured:** SPI1 for XPT2046 is referenced but not configured in `.ioc`.
@@ -177,7 +211,7 @@ The following changes were made to ensure compatibility with modern ARM GCC (13.
 ## Branches
 
 - `main` — main development branch
-- `linux-build` — branch for testing Linux build compatibility
+- `cpp-conversion` — C++17 conversion branch
 
 ## Qwen Added Memories
 - Before committing changes, always edit README.md and QWEN.md files to reflect the changes. All comments and documentation must be written in English.

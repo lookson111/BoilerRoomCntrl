@@ -13,7 +13,7 @@ void fltochar(char* tmpl, float fltdata)
     int intData;
     int medData;
     int k;
-    int bool = 0;
+    int done = 0;
     for (int i = 0; i < STR_BUF_SIZE_6; i++) {
         tmpl[i] = ' ';
     }
@@ -30,10 +30,10 @@ void fltochar(char* tmpl, float fltdata)
     for (int i = 4; i >= 0; i--) {
         medData = intData % 10;
         intData = intData / 10;
-        if (bool)
+        if (done)
             break;
         if (intData == 0)
-            bool = 1;
+            done = 1;
         if (i > 2) {
             k = i + 1;
         } else {
@@ -79,7 +79,7 @@ void inttochar(char* tmpl, uint32_t intdata)
     uint32_t inData = intdata;
     int medData;
     int k;
-    int bool = 0;
+    int done = 0;
     for (int i = 0; i < STR_BUF_SIZE_6; i++) {
         tmpl[i] = ' ';
     }
@@ -87,10 +87,10 @@ void inttochar(char* tmpl, uint32_t intdata)
     for (int i = 5; i >= 0; i--) {
         medData = inData % 10;
         inData = inData / 10;
-        if (bool)
+        if (done)
             break;
         if (inData == 0)
-            bool = 1;
+            done = 1;
         k = i;
         switch (medData) {
             case 0:
@@ -161,7 +161,7 @@ uint32_t ADC_Avg_result(AdcAverage* adcavg)
 void ADC_Avg_init(AdcAverage* adcavg, uint8_t qty, uint8_t qty_of_el)
 {
     for (uint8_t i = 0; i < qty; i++) {
-        adcavg[i].arAdc = pvPortMalloc(qty_of_el * 4);
+        adcavg[i].arAdc = static_cast<float*>(pvPortMalloc(qty_of_el * 4));
     }
 }
 
@@ -176,6 +176,83 @@ void ADC_Avg_add(AdcAverage* adcavg, uint32_t add_var, uint8_t qty)
     } else {
         adcavg->count = 0;
     }
+}
+
+// ManagePressHeatingSys constructor
+ManagePressHeatingSys::ManagePressHeatingSys()
+    : currentVolt(0), previousPress(0), dVolt(0), barPerSecond(0),
+      minPressPoint(1.0f), maxPressPoint(2.0f), minVolt(0.5f), maxVolt(4.5f),
+      minBarPerSecond(0.05f), timePreviousPress(0),
+      lagMinBerPerSecondError(1000), timeOnPomp(0), GPIO_Port(nullptr),
+      GPIO_Pin(0), pomp_on(0), error(0)
+{
+}
+
+void ManagePressHeatingSys::init(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin) {
+    this->GPIO_Port = GPIO_Port;
+    this->GPIO_Pin = GPIO_Pin;
+    this->previousPress = 0;
+    this->timePreviousPress = 0;
+    this->minBarPerSecond = Pressure::MIN_BAR_PER_SEC;
+    this->lagMinBerPerSecondError = Pressure::ERROR_LAG_MS;
+    this->maxPressPoint = Pressure::MAX_POINT;
+    this->minPressPoint = Pressure::MIN_POINT;
+    this->maxVolt = Pressure::VOLT_MAX;
+    this->minVolt = Pressure::VOLT_MIN;
+    this->dVolt = Pressure::VOLT_DELTA;
+    this->error = 0;
+    this->pomp_on = 0;
+}
+
+void ManagePressHeatingSys::work(uint32_t adc_volt, uint32_t time) {
+    this->meas(adc_volt, time);
+    if (this->error) {
+        this->pomp_on = 0;
+        HAL_GPIO_WritePin(this->GPIO_Port, this->GPIO_Pin, GPIO_PIN_RESET);
+        return;
+    }
+    if ((this->previousPress < this->minPressPoint) & !this->pomp_on) {
+        this->pomp_on = 1;
+        this->timeOnPomp = time;
+        HAL_GPIO_WritePin(this->GPIO_Port, this->GPIO_Pin, GPIO_PIN_SET);
+    }
+    if ((this->previousPress > this->maxPressPoint) & this->pomp_on) {
+        this->pomp_on = 0;
+        HAL_GPIO_WritePin(this->GPIO_Port, this->GPIO_Pin, GPIO_PIN_RESET);
+    }
+}
+
+void ManagePressHeatingSys::meas(uint32_t adc_volt, uint32_t time) {
+    float Rt = adc_volt;
+    float Ut;
+    float pmavg;
+    uint32_t dt;
+    Ut = Rt / VoltDiv::FACTOR_4095 * Pressure::REF_VOLT * Pressure::SCALE;
+    if (Ut > (this->maxVolt + this->dVolt)) {
+        this->error |= Error::PRESS_MET_OUT_OF_VOLT;
+        return;
+    }
+    if (Ut < (this->minVolt - this->dVolt)) {
+        this->error |= Error::WIRE_BREAK;
+        return;
+    }
+    this->error &= (~Error::PRESS_MET_OUT_OF_VOLT & ~Error::WIRE_BREAK);
+
+    pmavg = (Ut * Pressure::MULT - Pressure::OFFSET) / Pressure::DIV;
+    if (this->pomp_on) {
+        if ((time < this->timePreviousPress)) {
+            dt = (0xFFFFFFFF - this->timePreviousPress) + time;
+        }
+        this->barPerSecond = (pmavg - this->previousPress) / (dt / (float)RTOS::TICK_RATE_HZ);
+        if (this->barPerSecond < this->minBarPerSecond) {
+            if (time > (this->timeOnPomp + this->lagMinBerPerSecondError)) {
+                this->error |= Error::PRESS_MET_OUT_OF_BAR;
+                return;
+            }
+        }
+    }
+    this->previousPress = pmavg;
+    this->timePreviousPress = time;
 }
 
 void initManagePressHeatingSys(StManagePressHeatingSys* st,
@@ -202,17 +279,17 @@ void workManagePressHeatingSys(StManagePressHeatingSys* st, uint32_t adc_volt,
     measManagePressHeatingSys(st, adc_volt, time);
     if (st->error) {
         st->pomp_on = 0;
-        HAL_GPIO_WritePin(st->GPIO_Port, st->GPIO_Pin, RESET);
+        HAL_GPIO_WritePin(st->GPIO_Port, st->GPIO_Pin, GPIO_PIN_RESET);
         return;
     }
     if ((st->previousPress < st->minPressPoint) & !st->pomp_on) {
         st->pomp_on = 1;
         st->timeOnPomp = time;
-        HAL_GPIO_WritePin(st->GPIO_Port, st->GPIO_Pin, SET);
+        HAL_GPIO_WritePin(st->GPIO_Port, st->GPIO_Pin, GPIO_PIN_SET);
     }
     if ((st->previousPress > st->maxPressPoint) & st->pomp_on) {
         st->pomp_on = 0;
-        HAL_GPIO_WritePin(st->GPIO_Port, st->GPIO_Pin, RESET);
+        HAL_GPIO_WritePin(st->GPIO_Port, st->GPIO_Pin, GPIO_PIN_RESET);
     }
 }
 

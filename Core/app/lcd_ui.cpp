@@ -252,7 +252,7 @@ void disp_poweron(stDispMenu* dm)
             memcpy(&strMenuValsPoint[rel_manage[i].line][0], str_off,
                    CNTVSYMINSTR);
             HAL_GPIO_WritePin(rel_manage[i].gpio_port, rel_manage[i].pin,
-                              rel_manage[i].fl_on_off);
+                              static_cast<GPIO_PinState>(rel_manage[i].fl_on_off));
         }
         dm->pwr_on = 0;
     }
@@ -295,7 +295,7 @@ void disp_button_press(stDispMenu* dm, RTC_HandleTypeDef* hrtc)
                                    CNTVSYMINSTR);
                             HAL_GPIO_WritePin(rel_manage[i].gpio_port,
                                               rel_manage[i].pin,
-                                              rel_manage[i].fl_on_off);
+                                              static_cast<GPIO_PinState>(rel_manage[i].fl_on_off));
                         }
                     }
                     break;

@@ -75,15 +75,17 @@ osThreadId dispTaskHandle;
 
 osMutexId sensorDataMutexHandle;
 
-StManagePressHeatingSys managePressHeatingSys;
+// Use C++ classes instead of global C-style variables
+ManagePressHeatingSys managePressHeatingSys; // Already a class instance
 
-uint8_t channelsADCTr[] = {
+// ADC channel configurations (using literal values, not namespace constants)
+static constexpr uint8_t channelsADCTr[] = {
     1, // Терморезистор 1
     2, // Терморезистор 2
-    3, // Терморезистор 4
-    4, // Терморезистор 3
+    4, // Терморезистор 4
+    3, // Терморезистор 3
 };
-uint8_t channelsADCPm[] = {
+static constexpr uint8_t channelsADCPm[] = {
     8, // Датчик давления 1
     9  // Датчик давления 2
 };
@@ -151,11 +153,62 @@ static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_USART3_UART_Init(void);
+
+/* USER CODE BEGIN PFP */
+
+// ============================================================================
+// C++ Task Classes - encapsulating task logic in proper OOP
+// ============================================================================
+
+class SensorDataTask {
+public:
+    SensorDataTask();
+    
+    void run();
+    
+private:
+    void readDHT22();
+    void readThermistors();
+    void readPressureSensors();
+    void managePressureSystem();
+    
+    uint32_t start_time;
+    static constexpr uint32_t update_time = DELAY_TIME_BASE_MS;
+    char hum_mes;
+    char tmp_mes;
+};
+
+class DisplayUITask {
+public:
+    DisplayUITask();
+    
+    void run();
+    
+private:
+    void updateSensorStrings();
+    void updateTimeStrings();
+    void renderDisplay();
+    
+    uint32_t last_time_update;
+};
+
+class ModbusEEPromTask {
+public:
+    ModbusEEPromTask();
+    
+    void run();
+    
+private:
+    void testEEPROM();
+    void initModbus();
+};
+
+// ============================================================================
+// Task static callbacks for FreeRTOS (C linkage requirement)
+// ============================================================================
 void StartDefaultTask(void const* argument);
 void StartSensReadTask(void const* argument);
 void StartDispTask(void const* argument);
-
-/* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
@@ -234,8 +287,10 @@ int main(void)
     osMutexDef(sensorDataMutex);
     sensorDataMutexHandle = osMutexCreate(osMutex(sensorDataMutex));
 
-    /* Create the thread(s) */
+    /* Create the thread(s) using C++ task classes */
     /* definition and creation of defaultTask */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wwrite-strings"
     osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, TASK_STACK_DEFAULT);
     defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
@@ -246,6 +301,7 @@ int main(void)
     /* definition and creation of dispTask */
     osThreadDef(dispTask, StartDispTask, osPriorityNormal, 0, TASK_STACK_DISPLAY);
     dispTaskHandle = osThreadCreate(osThread(dispTask), NULL);
+#pragma GCC diagnostic pop
 
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
@@ -759,34 +815,21 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-/* USER CODE END 4 */
+// ============================================================================
+// C++ Task Class Implementations
+// ============================================================================
 
-/* USER CODE BEGIN Header_StartDefaultTask */
-/**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used 
-  * @retval None
-  */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const* argument)
-{
-    /* USER CODE BEGIN 5 */
-    osDelay(DELAY_INIT_MS);
+// ---- ModbusEEPromTask Implementation ----
+
+ModbusEEPromTask::ModbusEEPromTask() {
+}
+
+void ModbusEEPromTask::testEEPROM() {
     const char wmsg[] = "Some data";
     char rmsg[sizeof(wmsg)];
-    uint16_t devAddr = (I2C_EEPROM_ADDR << 1);
-    uint16_t memAddr = I2C_MEM_ADDR_INIT;
-
+    uint16_t devAddr = (I2C::EEPROM_ADDR << 1);
+    uint16_t memAddr = I2C::MEM_ADDR_INIT;
     HAL_StatusTypeDef status;
-
-    HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
-    modbus_configure(&modBusData, &huart3, slaveID, HOLDING_REGS_SIZE_BR,
-                     holdingRegs);
-    RCC->APB1ENR |= RCC_APB1ENR_USART3EN; // USART3 Clock ON
-    USART3->CR1 |= USART_CR1_UE | USART_CR1_TE |
-                   USART_CR1_RE |    // USART1 ON, TX ON, RX ON
-                   USART_CR1_RXNEIE; // RXNE Int ON
-    NVIC_EnableIRQ(USART3_IRQn);
 
     HAL_I2C_Mem_Write(&hi2c1, devAddr, memAddr, I2C_MEMADD_SIZE_16BIT,
                       (uint8_t*)wmsg, sizeof(wmsg), HAL_MAX_DELAY);
@@ -797,9 +840,262 @@ void StartDefaultTask(void const* argument)
             //    перенести __HAL_RCC_I2C1_CLK_ENABLE(); до                 ///
             //    __HAL_RCC_GPIOB_CLK_ENABLE();                                            ///
             HAL_I2C_Mem_Read(&hi2c1, devAddr, memAddr, I2C_MEMADD_SIZE_16BIT,
-                             (uint8_t*)rmsg, sizeof(wmsg), I2C_TIMEOUT_MS);
+                             (uint8_t*)rmsg, sizeof(wmsg), I2C::TIMEOUT_MS);
+        }
+        osDelay(1000); // Read EEPROM periodically, not continuously
+    }
+}
+
+void ModbusEEPromTask::initModbus() {
+    HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
+    modbus_configure(&modBusData, &huart3, slaveID, HOLDING_REGS_SIZE_BR,
+                     holdingRegs);
+    RCC->APB1ENR |= RCC_APB1ENR_USART3EN; // USART3 Clock ON
+    USART3->CR1 |= USART_CR1_UE | USART_CR1_TE |
+                   USART_CR1_RE |    // USART1 ON, TX ON, RX ON
+                   USART_CR1_RXNEIE; // RXNE Int ON
+    NVIC_EnableIRQ(USART3_IRQn);
+}
+
+void ModbusEEPromTask::run() {
+    osDelay(DELAY_INIT_MS);
+    initModbus();
+    testEEPROM();
+}
+
+// ---- SensorDataTask Implementation ----
+
+SensorDataTask::SensorDataTask() 
+    : start_time(0), hum_mes(1), tmp_mes(1) {
+}
+
+void SensorDataTask::readDHT22() {
+    if (((start_time + update_time) < dwt_timer::millis()) & tmp_mes) {
+        float temp = readTemperature(DHT22_2_GPIO_Port, DHT22_2_Pin, 0x00);
+        osMutexWait(sensorDataMutexHandle, osWaitForever);
+        DHT22Temp = temp;
+        osMutexRelease(sensorDataMutexHandle);
+        start_time = dwt_timer::millis();
+        hum_mes = 1;
+        tmp_mes = 0;
+    }
+    if (((start_time + update_time) < dwt_timer::millis()) & hum_mes) {
+        float hum = readHumidity(DHT22_2_GPIO_Port, DHT22_2_Pin);
+        osMutexWait(sensorDataMutexHandle, osWaitForever);
+        DHT22Hum = hum;
+        osMutexRelease(sensorDataMutexHandle);
+        start_time = dwt_timer::millis();
+        hum_mes = 0;
+        tmp_mes = 1;
+    }
+}
+
+void SensorDataTask::readThermistors() {
+    int ADC;
+    float Rt;
+    float RI;
+    float RI_1;
+    
+    for (uint8_t j = 0; j < enTrChanEnd; j++) {
+        ADC = ADC_Result(&hadc1, channelsADCTr[j]);
+        Rt = Thermistor::BASE_R * ((Thermistor::REF_R * ADC) / (VOLT_DIV_4095 - ADC));
+        for (uint8_t i = 0; i < Thermistor::TABLE_SIZE; i++) {
+            if (Rt > tTR_temper_volt_arr[i]) {
+                RI = tTR_temper_volt_arr[i];
+                RI_1 = tTR_temper_volt_arr[i - 1];
+                float tval = Rt / (RI - RI_1) - RI_1 / (RI - RI_1) + i - Thermistor::BASE_OFFSET;
+                osMutexWait(sensorDataMutexHandle, osWaitForever);
+                travg[j] = tval;
+                osMutexRelease(sensorDataMutexHandle);
+                break;
+            }
         }
     }
+}
+
+void SensorDataTask::readPressureSensors() {
+    float Rt;
+    for (uint8_t i = 0; i < enPmChanEnd; i++) {
+        pmavgadc[i] = ADC_Result(&hadc1, channelsADCPm[i]);
+        Rt = pmavgadc[i];
+        Rt = Rt / VoltDiv::FACTOR_4095 * Pressure::REF_VOLT * Pressure::SCALE;
+        float pval = (Rt * Pressure::MULT - Pressure::OFFSET) / Pressure::DIV;
+        osMutexWait(sensorDataMutexHandle, osWaitForever);
+        pmavg[i] = pval;
+        osMutexRelease(sensorDataMutexHandle);
+    }
+}
+
+void SensorDataTask::managePressureSystem() {
+    managePressHeatingSys.work(pmavgadc[en_pm1], dwt_timer::millis());
+}
+
+void SensorDataTask::run() {
+    osDelay(DELAY_SENSOR_INIT_MS);
+    dwt_timer::init();
+    begin(DHT22_2_GPIO_Port, DHT22_2_Pin);
+
+    HAL_ADCEx_Calibration_Start(&hadc1);
+
+    managePressHeatingSys.init(PM_1_GPIO_Port, PM_1_Pin);
+    start_time = dwt_timer::millis();
+
+    for (;;) {
+        readDHT22();
+        readThermistors();
+        readPressureSensors();
+        managePressureSystem();
+        osDelay(1);
+    }
+}
+
+// ---- DisplayUITask Implementation ----
+
+DisplayUITask::DisplayUITask() : last_time_update(0) {
+}
+
+void DisplayUITask::updateSensorStrings() {
+    // Read sensor data (protected by mutex)
+    osMutexWait(sensorDataMutexHandle, osWaitForever);
+    float loc_dhtTemp = DHT22Temp;
+    float loc_dhtHum = DHT22Hum;
+    float loc_tr1 = travg[en_tr1];
+    float loc_tr2 = travg[en_tr2];
+    float loc_tr3 = travg[en_tr3];
+    float loc_tr4 = travg[en_tr4];
+    float loc_pm2 = pmavg[en_pm2];
+    osMutexRelease(sensorDataMutexHandle);
+
+    // Convert to strings for display
+    fltochar(&strMenuValsData[menuDHT22_1_temp][0], loc_dhtTemp);
+    fltochar(&strMenuValsData[menuDHT22_1_humd][0], loc_dhtHum);
+    fltochar(&strMenuValsData[menuTRez_1][0], loc_tr1);
+    fltochar(&strMenuValsData[menuTRez_2][0], loc_tr2);
+    fltochar(&strMenuValsData[menuTRez_3][0], loc_tr3);
+    fltochar(&strMenuValsData[menuTRez_4][0], loc_tr4);
+    fltochar(&strMenuValsData[menuPres_1][0],
+             managePressHeatingSys.getPreviousPress());
+    fltochar(&strMenuValsData[menuPres_2][0], loc_pm2);
+    inttochar(&strMenuValsData[menuWtrCounter][0], wtr_flow_met);
+    inttochar(&strMenuValsData[menuPWMTermRez][0], dm.pwm_tmp);
+    fltochar(&strMenuValsData[menuDHT22_1_humd][0], loc_dhtHum);
+
+    fltochar(&strMenuValsPoint[menuDHT22_1_humd][0], loc_dhtHum);
+}
+
+void DisplayUITask::updateTimeStrings() {
+    RTC_TimeTypeDef sTimeRead = {0};
+    RTC_DateTypeDef sDateRead = {0};
+    int display_hour, display_minute, display_second, display_day, display_month, display_year;
+
+    if (dm.time_edit_mode) {
+        // Show temp values while editing
+        display_hour = dm.time_tmp_hour;
+        display_minute = dm.time_tmp_minute;
+        display_second = dm.time_tmp_second;
+        display_day = dm.time_tmp_day;
+        display_month = dm.time_tmp_month;
+        display_year = dm.time_tmp_year;
+    } else {
+        // Show actual RTC time otherwise
+        HAL_RTC_GetTime(&hrtc, &sTimeRead, RTC_FORMAT_BIN);
+        HAL_RTC_GetDate(&hrtc, &sDateRead, RTC_FORMAT_BIN);
+        display_hour = sTimeRead.Hours;
+        display_minute = sTimeRead.Minutes;
+        display_second = sTimeRead.Seconds;
+        display_day = sDateRead.Date;
+        display_month = sDateRead.Month;
+        display_year = sDateRead.Year;
+    }
+
+    inttochar(&strMenuValsPoint[menuTimeHour][0], display_hour);
+    inttochar(&strMenuValsPoint[menuTimeMinute][0], display_minute);
+    inttochar(&strMenuValsPoint[menuTimeSecond][0], display_second);
+    inttochar(&strMenuValsPoint[menuTimeDay][0], display_day);
+    inttochar(&strMenuValsPoint[menuTimeMonth][0], display_month);
+    inttochar(&strMenuValsPoint[menuTimeYear][0], display_year);
+}
+
+void DisplayUITask::renderDisplay() {
+    static uint32_t last_time_update = 0;
+    uint32_t now = HAL_GetTick();
+
+    // Update time every DELAY_TIME_UPDATE_MS
+    if (now - last_time_update >= DELAY_TIME_UPDATE_MS) {
+        disp_time_view(&dm, &hrtc, &sTime, &DateToUpdate);
+        last_time_update = now;
+    }
+
+    updateSensorStrings();
+    updateTimeStrings();
+
+    disp_button_press(&dm, &hrtc);
+    disp_out_lines(&dm, Font_12x15);
+    disp_point_edit(&dm);
+    disp_curs_view(&dm, Font_12x15);
+}
+
+void DisplayUITask::run() {
+    osDelay(DELAY_SENSOR_INIT_MS);
+
+    HAL_GPIO_WritePin(DISP_BLK_GPIO_Port, DISP_BLK_Pin, GPIO_PIN_SET);
+
+    init_ILI9341(&hspi2);
+
+    disp_init(&dm);
+
+    for (int i = 0; i < menuCountElements; i++) {
+        memcpy(&strMenuValsData[i][0], str_clear, Menu::VALUE_STR_LEN);
+    }
+    for (int i = 0; i < menuPCountElements; i++) {
+        memcpy(&strMenuValsPoint[i][0], str_clear, Menu::VALUE_STR_LEN);
+    }
+
+    disp_poweron(&dm);
+
+    for (;;) {
+        renderDisplay();
+        osDelay(10); // Update display at ~100Hz, enough for UI
+    }
+}
+
+// ============================================================================
+// C-style task entry points (required by FreeRTOS CMSIS-RTOS)
+// These delegate to the C++ class instances
+// ============================================================================
+
+/* SPI DMA callback - must be outside task classes for ISR access */
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi)
+{
+    if (hspi == &hspi2) {
+        dma_spi_cnt--;
+        if (dma_spi_cnt == 0) {
+            HAL_SPI_DMAStop(&hspi2);
+            dma_spi_cnt = 1;
+            dma_spi_fl = 1;
+        }
+    }
+}
+
+// Global task instances (avoid function-local statics to prevent __cxa_guard issues)
+static ModbusEEPromTask g_modbusEEPromTask;
+static SensorDataTask g_sensorDataTask;
+static DisplayUITask g_displayUITask;
+
+/* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void const* argument)
+{
+    /* USER CODE BEGIN 5 */
+    // Delegate to C++ task class instance
+    g_modbusEEPromTask.run();
     /* USER CODE END 5 */
 }
 
@@ -813,90 +1109,12 @@ void StartDefaultTask(void const* argument)
 void StartSensReadTask(void const* argument)
 {
     /* USER CODE BEGIN StartSensReadTask */
-
-    osDelay(DELAY_SENSOR_INIT_MS);
-    DWT_Init();
-    begin(DHT22_2_GPIO_Port, DHT22_2_Pin);
-
-    HAL_ADCEx_Calibration_Start(&hadc1);
-
-    int ADC; //ij = tTR_temper_volt_arr[0];
-    float Rt;
-    float RI;
-    float RI_1;
-    uint32_t start_time = millis();
-    uint32_t update_time = DELAY_TIME_BASE_MS;
-    char hum_mes = 1;
-    char tmp_mes = 1;
-    initManagePressHeatingSys(&managePressHeatingSys, PM_1_GPIO_Port, PM_1_Pin);
-
-
-    /* Infinite loop */
-    for (;;) {
-        if (((start_time + update_time) < millis()) & tmp_mes) {
-            float temp = readTemperature(DHT22_2_GPIO_Port, DHT22_2_Pin, 0x00);
-            osMutexWait(sensorDataMutexHandle, osWaitForever);
-            DHT22Temp = temp;
-            osMutexRelease(sensorDataMutexHandle);
-            start_time = millis();
-            hum_mes = 1;
-            tmp_mes = 0;
-        }
-        if (((start_time + update_time) < millis()) & hum_mes) {
-            float hum = readHumidity(DHT22_2_GPIO_Port, DHT22_2_Pin);
-            osMutexWait(sensorDataMutexHandle, osWaitForever);
-            DHT22Hum = hum;
-            osMutexRelease(sensorDataMutexHandle);
-            start_time = millis();
-            hum_mes = 0;
-            tmp_mes = 1;
-        }
-        for (uint8_t j = 0; j < enTrChanEnd; j++) {
-            ADC = ADC_Result(&hadc1, channelsADCTr[j]);
-            Rt = THERMISTOR_BASE_R * ((THERMISTOR_REF_R * ADC) / (VOLT_DIV_4095 - ADC));
-            for (uint8_t i = 0; i < THERMISTOR_TABLE_SIZE; i++) {
-                if (Rt > tTR_temper_volt_arr[i]) {
-                    RI = tTR_temper_volt_arr[i];
-                    RI_1 = tTR_temper_volt_arr[i - 1];
-                    float tval = Rt / (RI - RI_1) - RI_1 / (RI - RI_1) + i - THERMISTOR_BASE_OFFSET;
-                    osMutexWait(sensorDataMutexHandle, osWaitForever);
-                    travg[j] = tval;
-                    osMutexRelease(sensorDataMutexHandle);
-                    break;
-                }
-            }
-        }
-
-        for (uint8_t i = 0; i < enPmChanEnd; i++) {
-            pmavgadc[i] = ADC_Result(&hadc1, channelsADCPm[i]);
-            Rt = pmavgadc[i];
-            Rt = Rt / VOLT_DIV_4095_DIV * PRESSURE_REF_VOLT * PRESSURE_SCALE;
-            float pval = (Rt * PRESSURE_MULT - PRESSURE_OFFSET) / PRESSURE_DIV;
-            osMutexWait(sensorDataMutexHandle, osWaitForever);
-            pmavg[i] = pval;
-            osMutexRelease(sensorDataMutexHandle);
-        }
-
-        workManagePressHeatingSys(&managePressHeatingSys, pmavgadc[en_pm1],
-                                  millis());
-
-        osDelay(1);
-    }
+    // Delegate to C++ task class instance
+    g_sensorDataTask.run();
     /* USER CODE END StartSensReadTask */
 }
 
 /* USER CODE BEGIN Header_StartDispTask */
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi)
-{
-    if (hspi == &hspi2) {
-        dma_spi_cnt--;
-        if (dma_spi_cnt == 0) {
-            HAL_SPI_DMAStop(&hspi2);
-            dma_spi_cnt = 1;
-            dma_spi_fl = 1;
-        }
-    }
-}
 /**
 * @brief Function implementing the dispTask thread.
 * @param argument: Not used
@@ -906,104 +1124,8 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi)
 void StartDispTask(void const* argument)
 {
     /* USER CODE BEGIN StartDispTask */
-    /* Infinite loop */
-
-    osDelay(DELAY_SENSOR_INIT_MS);
-
-    HAL_GPIO_WritePin(DISP_BLK_GPIO_Port, DISP_BLK_Pin, GPIO_PIN_SET);
-
-    init_ILI9341(&hspi2);
-
-    disp_init(&dm);
-
-    for (int i = 0; i < menuCountElements; i++) {
-        memcpy(&strMenuValsData[i][0], str_clear, MENU_VALUE_STR_LEN);
-    }
-    for (int i = 0; i < menuPCountElements; i++) {
-        memcpy(&strMenuValsPoint[i][0], str_clear, MENU_VALUE_STR_LEN);
-    }
-
-    disp_poweron(&dm);
-
-    for (;;) {
-        static uint32_t last_time_update = 0;
-        uint32_t now = HAL_GetTick();
-
-        // Update time every DELAY_TIME_UPDATE_MS
-        if (now - last_time_update >= DELAY_TIME_UPDATE_MS) {
-            disp_time_view(&dm, &hrtc, &sTime, &DateToUpdate);
-            last_time_update = now;
-        }
-
-        // Переносим данные в строки (protected by mutex)
-        osMutexWait(sensorDataMutexHandle, osWaitForever);
-        float loc_dhtTemp = DHT22Temp;
-        float loc_dhtHum = DHT22Hum;
-        float loc_tr1 = travg[en_tr1];
-        float loc_tr2 = travg[en_tr2];
-        float loc_tr3 = travg[en_tr3];
-        float loc_tr4 = travg[en_tr4];
-        float loc_pm2 = pmavg[en_pm2];
-        osMutexRelease(sensorDataMutexHandle);
-
-        fltochar(&strMenuValsData[menuDHT22_1_temp][0], loc_dhtTemp);
-        fltochar(&strMenuValsData[menuDHT22_1_humd][0], loc_dhtHum);
-        fltochar(&strMenuValsData[menuTRez_1][0], loc_tr1);
-        fltochar(&strMenuValsData[menuTRez_2][0], loc_tr2);
-        fltochar(&strMenuValsData[menuTRez_3][0], loc_tr3);
-        fltochar(&strMenuValsData[menuTRez_4][0], loc_tr4);
-        fltochar(&strMenuValsData[menuPres_1][0],
-                 managePressHeatingSys.previousPress);
-        fltochar(&strMenuValsData[menuPres_2][0], loc_pm2);
-        inttochar(&strMenuValsData[menuWtrCounter][0], wtr_flow_met);
-        inttochar(&strMenuValsData[menuPWMTermRez][0], dm.pwm_tmp);
-        fltochar(&strMenuValsData[menuDHT22_1_humd][0], loc_dhtHum);
-
-        fltochar(&strMenuValsPoint[menuDHT22_1_humd][0], loc_dhtHum);
-
-        // Always update time edit values display
-        {
-            RTC_TimeTypeDef sTimeRead = {0};
-            RTC_DateTypeDef sDateRead = {0};
-            int display_hour, display_minute, display_second, display_day, display_month, display_year;
-            
-            if (dm.time_edit_mode) {
-                // Show temp values while editing
-                display_hour = dm.time_tmp_hour;
-                display_minute = dm.time_tmp_minute;
-                display_second = dm.time_tmp_second;
-                display_day = dm.time_tmp_day;
-                display_month = dm.time_tmp_month;
-                display_year = dm.time_tmp_year;
-            } else {
-                // Show actual RTC time otherwise
-                HAL_RTC_GetTime(&hrtc, &sTimeRead, RTC_FORMAT_BIN);
-                HAL_RTC_GetDate(&hrtc, &sDateRead, RTC_FORMAT_BIN);
-                display_hour = sTimeRead.Hours;
-                display_minute = sTimeRead.Minutes;
-                display_second = sTimeRead.Seconds;
-                display_day = sDateRead.Date;
-                display_month = sDateRead.Month;
-                display_year = sDateRead.Year;
-            }
-            
-            inttochar(&strMenuValsPoint[menuTimeHour][0], display_hour);
-            inttochar(&strMenuValsPoint[menuTimeMinute][0], display_minute);
-            inttochar(&strMenuValsPoint[menuTimeSecond][0], display_second);
-            inttochar(&strMenuValsPoint[menuTimeDay][0], display_day);
-            inttochar(&strMenuValsPoint[menuTimeMonth][0], display_month);
-            inttochar(&strMenuValsPoint[menuTimeYear][0], display_year);
-        }
-        // КОНЕЦ Переносим данные в строки
-
-        disp_button_press(&dm, &hrtc);
-
-        disp_out_lines(&dm, Font_12x15);
-
-        disp_point_edit(&dm);
-
-        disp_curs_view(&dm, Font_12x15);
-    }
+    // Delegate to C++ task class instance
+    g_displayUITask.run();
     /* USER CODE END StartDispTask */
 }
 

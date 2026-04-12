@@ -8,6 +8,10 @@
 #include "cmsis_os.h"
 #include "stm32f1xx_hal.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define ILI9341_MADCTL_MY  0x80
 #define ILI9341_MADCTL_MX  0x40
 #define ILI9341_MADCTL_MV  0x20
@@ -85,5 +89,9 @@ void ILI9341_SetRotation(uint8_t r);
 /* Current display dimensions (updated by ILI9341_SetRotation) */
 extern uint16_t ILI9341_WIDTH;
 extern uint16_t ILI9341_HEIGHT;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __ILI9341_H__
